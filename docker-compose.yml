@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ./cyberkit-client
+      dockerfile: Dockerfile
+    container_name: cyberkit_client
+    restart: always
+    depends_on:
+      - api
+    env_file:
+      - cyberkit-client/.env # ✅ Load frontend .env file
+    ports:
+      - "2905:5173"
+    develop:
+      # we specify the files to watch for changes
+      watch:
+        # it'll watch for changes in package.json and package-lock.json and rebuild the container if there are any changes
+        - path: ./cyberkit-client/package.json
+          action: rebuild
+        - path: ./cyberkit-client/package-lock.json
+          action: rebuild
+        # it'll watch for changes in the frontend directory and sync the changes with the container real time
+        - path: ./cyberkit-client
+          target: /app
+          action: sync
+
+  api:
+    build:
+      context: ./cyberkit-server
+      dockerfile: Dockerfile
+    container_name: cyberkit_server
+    restart: always
+    depends_on:
+      - database
+    env_file:
+      - cyberkit-server/.env # ✅ Ensure Docker Compose reads this file
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/cyberkit
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: supersecretpassword
+    ports:
+      - "8080:8080"
+
+  database:
+    image: postgres:latest
+    container_name: cyberkit_db
+    restart: always
+    env_file:
+      - cyberkit-server/.env # ✅ Ensure Docker Compose reads this file
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: cyberkit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

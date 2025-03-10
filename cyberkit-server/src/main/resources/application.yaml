@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /cyberkit
+
+spring:
+    datasource:
+        url: "jdbc:postgresql://localhost:5432/cyberkit"
+        username: admin
+        password: supersecretpassword
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true

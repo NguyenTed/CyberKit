@@ -1,0 +1,20 @@
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE-specific files
+*.iml
+*.idea/
+.vscode/
+*.log
+
+# Ignore Node.js dependencies (will be installed in container)
+node_modules/
+npm-debug.log
+yarn.lock
+
+# Ignore Vite build output (only needed in final image)
+dist/
+
+# Ignore local environment files
+.env

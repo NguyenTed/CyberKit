@@ -1,0 +1,14 @@
+# Ignore Maven build files
+target/
+
+# Ignore version control directories
+.git
+.gitignore
+
+# Ignore IDE project files
+.idea
+*.iml
+*.log
+
+# Ignore OS-specific files
+.DS_Store
