@@ -1,0 +1,99 @@
+package com.cyberkit.cyberkit_server.controlller;
+
+
+import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
+import com.cyberkit.cyberkit_server.data.AdminEntity;
+import com.cyberkit.cyberkit_server.dto.UserDTO;
+import com.cyberkit.cyberkit_server.dto.request.LoginDTO;
+import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
+import com.cyberkit.cyberkit_server.dto.response.ResLoginDTO;
+import com.cyberkit.cyberkit_server.dto.response.RestResponse;
+import com.cyberkit.cyberkit_server.enums.RoleEnum;
+import com.cyberkit.cyberkit_server.service.AccountService;
+import com.cyberkit.cyberkit_server.service.UserService;
+import com.cyberkit.cyberkit_server.util.SecurityUtil;
+import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("api/v1/auth")
+public class AuthController {
+
+    @Value("${spring.jwt.refresh-expiration-in-seconds}")
+    private Long refreshJwtExpiration;
+    private final AccountService accountService;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final SecurityUtil securityUtil;
+    private final ModelMapper modelMapper;
+
+    public AuthController(AccountService accountService, AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, ModelMapper modelMapper) {
+        this.accountService = accountService;
+        this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.securityUtil = securityUtil;
+        this.modelMapper = modelMapper;
+    }
+
+
+    @PostMapping("/register")
+    public ResponseEntity<RestResponse<Object>> register(@RequestBody @Valid RegisterDTO registerDTO){
+        UserDTO userDTO= accountService.createAccount(registerDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body( new RestResponse<>( 201,"","Created user successfully!",userDTO));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<RestResponse<Object>> login(@RequestBody @Valid LoginDTO loginDTO){
+
+        // Load input including username/password into Security.
+        UsernamePasswordAuthenticationToken authenticationToken= new UsernamePasswordAuthenticationToken(
+                loginDTO.getEmail(),
+                loginDTO.getPassword()
+        );
+        // After load in to AuthenticationManager have to overwrite the function loadUserByUserName() and function passwordDecoder()
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Create accessToken
+        String accessToken = securityUtil.createAccessToken(authentication);
+
+        // Format ResLoginDTO response
+        ResLoginDTO resLoginDTO= new ResLoginDTO();
+        // Extract the user info
+        AbstractUserEntity userEntity = accountService.getUserByEmail(loginDTO.getEmail());
+        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
+        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+        // Set the user info and access token to resLoginDTO
+        resLoginDTO.setUser(userInfo);
+        resLoginDTO.setAccessToken(accessToken);
+        // Create and update refresh token
+        String refreshToken = securityUtil.createRefreshToken(loginDTO.getEmail());
+        accountService.updateRefreshToken(refreshToken,loginDTO.getEmail());
+        // Save cookie
+        ResponseCookie responseCookie= ResponseCookie
+                .from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshJwtExpiration)
+                .build();
+
+
+        return ResponseEntity.status(200)
+                .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
+                .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
+
+    }
+
+}
