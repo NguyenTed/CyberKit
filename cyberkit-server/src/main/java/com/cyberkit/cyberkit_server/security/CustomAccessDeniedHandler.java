@@ -30,6 +30,5 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         res.setError("Error!!!");
         res.setMessage("You have not permission to call this api!");
         mapper.writeValue(response.getWriter(),res);
-
     }
 }

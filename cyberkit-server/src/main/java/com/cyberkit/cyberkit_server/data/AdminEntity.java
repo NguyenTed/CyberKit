@@ -1,11 +1,9 @@
 package com.cyberkit.cyberkit_server.data;
 
+import com.cyberkit.cyberkit_server.enums.GenderEnum;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "admins")

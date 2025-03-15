@@ -23,7 +23,7 @@ public class AccountEntity {
     private String refreshToken;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private AbstractUserEntity user;
 }

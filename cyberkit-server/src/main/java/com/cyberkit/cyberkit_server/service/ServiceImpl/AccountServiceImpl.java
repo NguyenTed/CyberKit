@@ -10,6 +10,7 @@ import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.repository.AccountRepository;
 import com.cyberkit.cyberkit_server.repository.AdminRepository;
+import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -23,14 +24,14 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository  accountRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
-    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
 
 
-    public AccountServiceImpl(AccountRepository accountRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder, AdminRepository adminRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder, UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
-        this.adminRepository = adminRepository;
+        this.userRepository = userRepository;
     }
 
 
@@ -41,25 +42,26 @@ public class AccountServiceImpl implements AccountService {
         if(accountRepository.existsByEmail(registerDTO.getEmail())){
             throw new GeneralAllException("Email is existed!!");
         }
-
-//        // Create UserEntity
-//        UserEntity userEntity = modelMapper.map(registerDTO,UserEntity.class);
-//        userEntity.setPremium(false);
-//        userEntity.setRefreshToken(null);
-        // Create AdminEntity
-        AdminEntity adminEntity = modelMapper.map(registerDTO,AdminEntity.class);
+        // Create UserEntity
+        UserEntity userEntity = modelMapper.map(registerDTO,UserEntity.class);
+        userEntity.setPremium(false);
+        userEntity.setRefreshToken(null);
 
         // Create Account Entity
         AccountEntity account= new AccountEntity();
-        account.setRole(RoleEnum.ADMIN);
-        account.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        account.setRole(RoleEnum.USER);
+        // Logging by username, password
+        if(registerDTO.getPassword() != null) {
+            account.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        }
         account.setEmail(registerDTO.getEmail());
-        account.setUser(adminEntity);
+        //Save user entity before
+        userEntity = userRepository.save(userEntity);
+        //Set saved user entity for account entity
+        account.setUser(userEntity);
         accountRepository.save(account);
-        // Set default role is user and not premium.
 
-        // Decode the password before insert user into database
-        UserDTO userDTO = modelMapper.map(adminEntity,UserDTO.class);
+        UserDTO userDTO = modelMapper.map(userEntity,UserDTO.class);
         return userDTO;
     }
 
@@ -81,5 +83,36 @@ public class AccountServiceImpl implements AccountService {
         accountEntity.setRefreshToken(token);
         accountRepository.save(accountEntity);
     }
+
+    @Override
+    public Boolean existsAccountByEmail(String email) {
+        return accountRepository.existsByEmail(email);
+    }
+
+    @Override
+    public UserDTO getUserInfoByEmail(String email) {
+        AccountEntity accountEntity= accountRepository.findByEmail(email);
+        if(accountEntity == null){
+            throw new GeneralAllException("Invalid email!!");
+        }
+        AbstractUserEntity userEntity = accountRepository.findByEmail(email).getUser();
+        if(userEntity==null){
+            throw new GeneralAllException("Invalid email!!");
+        }
+        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
+        userInfo.setEmail(email);
+        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+        return userInfo;
+    }
+
+    @Override
+    public Boolean checkValidRefreshToken(String refreshToken, String email) {
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        if(accountEntity==null){
+            throw new GeneralAllException("Invalid Emails!!");
+        }
+        return accountEntity.getRefreshToken().equals(refreshToken);
+    }
+
 
 }

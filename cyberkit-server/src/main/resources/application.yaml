@@ -18,3 +18,11 @@ spring:
       access-expiration-in-seconds: 3600
       # 100 hour = 60 * 60 * 100 = 360000
       refresh-expiration-in-seconds: 360000
+    security:
+      oauth2:
+        client:
+          registration:
+            github:
+              client-id: Ov23liTmyj7xZJ8xwp8h
+              client-secret: a640ec42f683b6a8174925881d39bf1bb896cc8f
+              scope: user:email

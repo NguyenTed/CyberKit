@@ -2,7 +2,9 @@ package com.cyberkit.cyberkit_server.controlller;
 
 
 import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
+import com.cyberkit.cyberkit_server.data.AccountEntity;
 import com.cyberkit.cyberkit_server.data.AdminEntity;
+import com.cyberkit.cyberkit_server.data.UserEntity;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.LoginDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
@@ -23,11 +25,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -66,14 +66,14 @@ public class AuthController {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // Create accessToken
-        String accessToken = securityUtil.createAccessToken(authentication);
+        String userEmail= loginDTO.getEmail();
+        String accessToken = securityUtil.createAccessToken(userEmail);
 
         // Format ResLoginDTO response
         ResLoginDTO resLoginDTO= new ResLoginDTO();
         // Extract the user info
-        AbstractUserEntity userEntity = accountService.getUserByEmail(loginDTO.getEmail());
-        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
-        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+
+        UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
         // Set the user info and access token to resLoginDTO
         resLoginDTO.setUser(userInfo);
         resLoginDTO.setAccessToken(accessToken);
@@ -93,6 +93,28 @@ public class AuthController {
         return ResponseEntity.status(200)
                 .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
                 .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
+
+    }
+
+    @GetMapping("account")
+    public ResponseEntity<RestResponse> getAccount() {
+        String userEmail = SecurityUtil.getCurrentUserLogin().isPresent() ?
+                SecurityUtil.getCurrentUserLogin().get() : "";
+        AbstractUserEntity userEntity = accountService.getUserByEmail(userEmail);
+        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
+        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+        return ResponseEntity.status(200).body(new RestResponse(200,"","Get account succesfully!",userInfo));
+    }
+
+    @GetMapping("refresh")
+    public ResponseEntity<RestResponse> getRefreshToken
+            (@CookieValue(name="refresh_token")String refreshToken){
+        Jwt decodedToken=securityUtil.checkValidateRefreshToken(refreshToken);
+        String userEmail = decodedToken.getSubject();
+        if(accountService.checkValidRefreshToken(refreshToken,userEmail)){
+
+        }
+        return null;
 
     }
 

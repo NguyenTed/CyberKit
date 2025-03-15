@@ -9,6 +9,7 @@ import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
 import com.cyberkit.cyberkit_server.service.UserService;
+import com.nimbusds.jose.util.Base64;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -20,8 +21,12 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,6 +45,9 @@ public class SecurityUtil {
     @Value("${spring.jwt.refresh-expiration-in-seconds}")
     private Long refreshJwtExpiration;
 
+    @Value("${spring.jwt.key}")
+    private String jwtKey;
+
 
 
 
@@ -49,22 +57,25 @@ public class SecurityUtil {
         this.accountService = accountService;
         this.modelMapper = modelMapper;
     }
+    public SecretKey getSecretKey(){
+        byte[] keyBytes = Base64.from(jwtKey).decode();
+        return new SecretKeySpec(keyBytes,0,keyBytes.length,JWT_ALGORITHM.getName());
+    }
 
-
-    public String createAccessToken(Authentication authentication){
+    public String createAccessToken(String email){
         Instant now = Instant.now();
         Instant validity = now.plus(accessJwtExpiration, ChronoUnit.SECONDS);
 
-        String userEmail = SecurityUtil.getCurrentUserLogin().isPresent()?
-                SecurityUtil.getCurrentUserLogin().get(): "";
-
+        UserDTO userInfo = accountService.getUserInfoByEmail(email);
+        List<String> roleAndAuthorities= new ArrayList<>();
+        roleAndAuthorities.add("ROLE_"+userInfo.getRole());
+        if (userInfo.isPremium())
+            roleAndAuthorities.add("PREMIUM");
         JwtClaimsSet claims= JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(authentication.getName())
-                .claim("authorities", authentication.getAuthorities().stream()
-                        .map(s->s.getAuthority())
-                        .collect(Collectors.toList()) )
+                .subject(email)
+                .claim("authorities", roleAndAuthorities)
                 .build();
 
         JwsHeader jwsHeader= JwsHeader.with(JWT_ALGORITHM).build();
@@ -75,13 +86,7 @@ public class SecurityUtil {
         Instant now = Instant.now();
         Instant validity = now.plus(refreshJwtExpiration, ChronoUnit.SECONDS);
 
-        String userEmail = SecurityUtil.getCurrentUserLogin().isPresent()?
-                SecurityUtil.getCurrentUserLogin().get(): "";
-        AbstractUserEntity userEntity = accountService.getUserByEmail(userEmail);
-        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
-        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
-
-
+        UserDTO userInfo = accountService.getUserInfoByEmail(email);
         JwtClaimsSet claims= JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
@@ -118,5 +123,18 @@ public class SecurityUtil {
         return Optional.ofNullable(securityContext.getAuthentication())
                 .filter(authentication -> authentication.getCredentials() instanceof String)
                 .map(authentication -> (String) authentication.getCredentials());
+    }
+    public Jwt checkValidateRefreshToken(String refreshToken){
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey()).macAlgorithm(JWT_ALGORITHM)
+                .build();
+
+        try{
+            return jwtDecoder.decode(refreshToken);
+        }
+        catch (Exception e){
+            System.out.println("error: "+ e.getMessage());
+            throw e;
+        }
+
     }
 }
