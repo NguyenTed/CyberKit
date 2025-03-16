@@ -44,7 +44,7 @@ public class OpenAPIConfig {
 
     private Info createApiInfo() {
         return new Info()
-                .title("Job Recommendation API")
+                .title("Cyberkit WebApp API")
                 .version("1.0")
                 .contact(createContact())
                 .description("This API exposes all endpoints.")
@@ -57,7 +57,7 @@ public class OpenAPIConfig {
         return new OpenAPI()
                 .info(createApiInfo())
                 .servers(List.of(
-                        createServer("http://localhost:8080", "Server URL in Development environment")))
+                        createServer("http://localhost:8080/cyberkit/", "Server URL in Development environment")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components().addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()));
     }

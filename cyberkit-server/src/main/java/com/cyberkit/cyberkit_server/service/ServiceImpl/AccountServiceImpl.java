@@ -100,8 +100,15 @@ public class AccountServiceImpl implements AccountService {
             throw new GeneralAllException("Invalid email!!");
         }
         UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
+        // Set email
         userInfo.setEmail(email);
+        // Set role
         userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+        // Set isPremium
+        if(userEntity instanceof UserEntity){
+            UserEntity castedUser = (UserEntity) userEntity;
+            userInfo.setPremium(castedUser.isPremium());
+        }
         return userInfo;
     }
 
@@ -109,7 +116,7 @@ public class AccountServiceImpl implements AccountService {
     public Boolean checkValidRefreshToken(String refreshToken, String email) {
         AccountEntity accountEntity = accountRepository.findByEmail(email);
         if(accountEntity==null){
-            throw new GeneralAllException("Invalid Emails!!");
+            throw new GeneralAllException("Invalid cookie!!");
         }
         return accountEntity.getRefreshToken().equals(refreshToken);
     }

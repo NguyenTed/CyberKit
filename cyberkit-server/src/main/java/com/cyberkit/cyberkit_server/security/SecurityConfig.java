@@ -20,12 +20,13 @@ public class SecurityConfig {
                                                    CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login","/api/v1/auth/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login","/api/v1/auth/register","/api/v1/auth/refresh","/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html","api/v1/oauth2").permitAll()
                         .requestMatchers("api/v1/account").hasAnyRole("ADMIN")
-                        .requestMatchers("api/v1/oauth2").permitAll()
                         .anyRequest().authenticated()
                 )
-
+                .cors(Customizer.withDefaults())
                 .oauth2ResourceServer((oauth2)->oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)

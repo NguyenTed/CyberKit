@@ -1,18 +1,13 @@
 package com.cyberkit.cyberkit_server.controlller;
 
 
-import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
-import com.cyberkit.cyberkit_server.data.AccountEntity;
-import com.cyberkit.cyberkit_server.data.AdminEntity;
-import com.cyberkit.cyberkit_server.data.UserEntity;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.LoginDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.dto.response.ResLoginDTO;
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
-import com.cyberkit.cyberkit_server.enums.RoleEnum;
+import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.service.AccountService;
-import com.cyberkit.cyberkit_server.service.UserService;
 import com.cyberkit.cyberkit_server.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
@@ -38,13 +33,11 @@ public class AuthController {
     private final AccountService accountService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
-    private final ModelMapper modelMapper;
 
     public AuthController(AccountService accountService, AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, ModelMapper modelMapper) {
         this.accountService = accountService;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
-        this.modelMapper = modelMapper;
     }
 
 
@@ -88,8 +81,6 @@ public class AuthController {
                 .path("/")
                 .maxAge(refreshJwtExpiration)
                 .build();
-
-
         return ResponseEntity.status(200)
                 .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
                 .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
@@ -100,9 +91,7 @@ public class AuthController {
     public ResponseEntity<RestResponse> getAccount() {
         String userEmail = SecurityUtil.getCurrentUserLogin().isPresent() ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
-        AbstractUserEntity userEntity = accountService.getUserByEmail(userEmail);
-        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
-        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
+        UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
         return ResponseEntity.status(200).body(new RestResponse(200,"","Get account succesfully!",userInfo));
     }
 
@@ -111,11 +100,47 @@ public class AuthController {
             (@CookieValue(name="refresh_token")String refreshToken){
         Jwt decodedToken=securityUtil.checkValidateRefreshToken(refreshToken);
         String userEmail = decodedToken.getSubject();
-        if(accountService.checkValidRefreshToken(refreshToken,userEmail)){
+        if(!accountService.checkValidRefreshToken(refreshToken,userEmail))
+            throw new GeneralAllException("Invalid cookie!");
+        String accessToken  = securityUtil.createAccessToken(userEmail);
+        String newRefreshToken = securityUtil.createRefreshToken(userEmail);
+        // Format ResLoginDTO response
+        ResLoginDTO resLoginDTO= new ResLoginDTO();
+        // Extract the user info
+        UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
+        // Set the user info and access token to resLoginDTO
+        resLoginDTO.setUser(userInfo);
+        resLoginDTO.setAccessToken(accessToken);
+        accountService.updateRefreshToken(newRefreshToken,userEmail);
+        // Save cookie
+        ResponseCookie responseCookie= ResponseCookie
+                .from("refresh_token", newRefreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(refreshJwtExpiration)
+                .build();
+        return ResponseEntity.status(200)
+                .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
+                .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
 
-        }
-        return null;
+    }
+    @PostMapping("logout")
+    public ResponseEntity logout(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        accountService.updateRefreshToken(null,authentication.getName());
+        ResponseCookie deleteSpringCookie=ResponseCookie
+                .from("refresh_token", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
 
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
+                .body("log out thanh cong");
     }
 
 }

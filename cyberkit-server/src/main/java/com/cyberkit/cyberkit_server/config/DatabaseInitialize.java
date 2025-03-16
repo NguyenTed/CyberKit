@@ -55,7 +55,6 @@ public class DatabaseInitialize implements CommandLineRunner {
             AccountEntity adminAccount = new AccountEntity(null,"admin@gmail.com", passwordEncoder.encode("123456"),"", RoleEnum.ADMIN ,admin);
             accountRepository.save(adminAccount);
 
-
             // Init the first user entity
             UserEntity firstUser = new UserEntity();
             firstUser.setId(null);
@@ -68,9 +67,6 @@ public class DatabaseInitialize implements CommandLineRunner {
             //Save the first user Account
             AccountEntity firstUserAccount = new AccountEntity(null,"user1@gmail.com", passwordEncoder.encode("123456"),"", RoleEnum.USER ,firstUser);
             accountRepository.save(firstUserAccount);
-
-
-
 
             //Init the subscription for second user
             SubscriptionEntity subscription = new SubscriptionEntity();
@@ -95,7 +91,13 @@ public class DatabaseInitialize implements CommandLineRunner {
             //Save the second user Account
             AccountEntity secondUserAccount = new AccountEntity(null,"user2@gmail.com", passwordEncoder.encode("123456"),"", RoleEnum.USER ,secondUser);
             accountRepository.save(secondUserAccount);
-
         }
+        if(countAccounts>0){
+            System.out.println(">>> SKIP INIT DATABASE ~ ALREADY HAVE DATA...");
+        }
+        else{
+            System.out.println(">>> END INIT DATABASE");
+        }
+
     }
 }
