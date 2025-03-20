@@ -16,7 +16,7 @@ const Hero: React.FC<HeroProps> = ({
   imageSrc = "https://source.unsplash.com/featured/?technology",
 }) => {
   return (
-    <section className="relative flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-20 py-20 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+    <section className="relative flex flex-col md:flex-row items-center justify-between px-6 mt-4 md:px-12 lg:px-20 py-20 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
       {/* Left Content */}
       <div className="max-w-2xl text-center md:text-left">
         <motion.h1

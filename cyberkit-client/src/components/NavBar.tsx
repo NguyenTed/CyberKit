@@ -29,7 +29,7 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="w-full bg-white shadow-md px-6 py-4">
+    <nav className="w-full fixed top-0 bg-white shadow-md px-6 py-2 z-40">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Left Side */}
         <div className="flex space-x-8">
@@ -74,10 +74,10 @@ const NavBar: React.FC = () => {
 
         {/* Right Side */}
         <div className="flex space-x-4">
-          <button className="px-4 py-2 text-blue-600 font-medium hover:text-blue-800">
+          <button className="px-4 py-1.5 text-blue-600 font-medium hover:text-blue-800 cursor-pointer">
             Log In
           </button>
-          <button className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+          <button className="px-5 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer">
             Sign Up
           </button>
         </div>
