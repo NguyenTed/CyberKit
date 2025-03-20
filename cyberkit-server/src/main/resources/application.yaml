@@ -12,3 +12,17 @@ spring:
       hibernate:
         ddl-auto: update
       show-sql: true
+    jwt:
+      key: rJeZbuqi8K8aGeoHrDOIANmdZUJvMR6lPByuoBNGCs+Q5YuycLMUA0U4JV8DNEpS0KbHrCKbXqn7BzAsRF8Iew==
+      # 1 hour = 60 * 60 = 3600
+      access-expiration-in-seconds: 3600
+      # 100 hour = 60 * 60 * 100 = 360000
+      refresh-expiration-in-seconds: 360000
+    security:
+      oauth2:
+        client:
+          registration:
+            github:
+              client-id: Ov23liTmyj7xZJ8xwp8h
+              client-secret: a640ec42f683b6a8174925881d39bf1bb896cc8f
+              scope: user:email
