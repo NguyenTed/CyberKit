@@ -125,6 +125,7 @@ public class AuthController {
                 .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
 
     }
+
     @PostMapping("logout")
     public ResponseEntity logout(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -140,7 +141,6 @@ public class AuthController {
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
-                .body("log out thanh cong");
+                .body("Logout successfully");
     }
-
 }
