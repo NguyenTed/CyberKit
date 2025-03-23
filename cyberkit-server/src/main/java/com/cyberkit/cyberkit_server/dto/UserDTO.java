@@ -1,6 +1,7 @@
 package com.cyberkit.cyberkit_server.dto;
 
 
+import com.cyberkit.cyberkit_server.enums.GenderEnum;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,4 +21,7 @@ public class UserDTO {
     private boolean isPremium;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
+    private String dateOfBirth;
+    @Enumerated(EnumType.STRING)
+    private GenderEnum gender;
 }

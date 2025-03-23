@@ -26,3 +26,5 @@ spring:
               client-id: Ov23liTmyj7xZJ8xwp8h
               client-secret: a640ec42f683b6a8174925881d39bf1bb896cc8f
               scope: user:email
+
+

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import NavBar from "../components/NavBar";
 import CategoryMenu from "../components/landing/CategoryMenu";
 import Hero from "../components/landing/Hero";
 import { FaRandom } from "react-icons/fa";
@@ -100,7 +99,7 @@ function Home() {
 
   return (
     <div>
-      <NavBar />
+      {/* <NavBar /> */}
       <Hero
         title="CyberKit"
         subtitle="The all-in-one toolbox for developers, sysadmins, and IT pros."

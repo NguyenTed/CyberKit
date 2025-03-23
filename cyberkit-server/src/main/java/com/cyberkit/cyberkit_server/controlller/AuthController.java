@@ -41,8 +41,8 @@ public class AuthController {
     }
 
 
-    @PostMapping("/register")
-    public ResponseEntity<RestResponse<Object>> register(@RequestBody @Valid RegisterDTO registerDTO){
+    @PostMapping("/signup")
+    public ResponseEntity<RestResponse<Object>> signup(@RequestBody @Valid RegisterDTO registerDTO){
         UserDTO userDTO= accountService.createAccount(registerDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body( new RestResponse<>( 201,"","Created user successfully!",userDTO));
     }
@@ -87,15 +87,30 @@ public class AuthController {
 
     }
 
-    @GetMapping("account")
+    @GetMapping("/account")
     public ResponseEntity<RestResponse> getAccount() {
+
+        String userEmail = SecurityUtil.getCurrentUserLogin().isPresent() ?
+                SecurityUtil.getCurrentUserLogin().get() : "";
+        UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
+        return ResponseEntity.status(200).body(new RestResponse(200,"","Get account succesfully!",userInfo));
+    }
+    @GetMapping("/account/waiting")
+    public ResponseEntity<RestResponse> getWaitingAccount() {
+
+        try {
+            Thread.sleep(700);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         String userEmail = SecurityUtil.getCurrentUserLogin().isPresent() ?
                 SecurityUtil.getCurrentUserLogin().get() : "";
         UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
         return ResponseEntity.status(200).body(new RestResponse(200,"","Get account succesfully!",userInfo));
     }
 
-    @GetMapping("refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<RestResponse> getRefreshToken
             (@CookieValue(name="refresh_token")String refreshToken){
         Jwt decodedToken=securityUtil.checkValidateRefreshToken(refreshToken);
