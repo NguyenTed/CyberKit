@@ -5,6 +5,6 @@ import com.cyberkit.cyberkit_server.data.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AccountRepository extends JpaRepository<AccountEntity, Long> {
-    public AccountEntity findByEmail(String email);
-    public  boolean existsByEmail(String email);
+    AccountEntity findByEmail(String email);
+    boolean existsByEmail(String email);
 }

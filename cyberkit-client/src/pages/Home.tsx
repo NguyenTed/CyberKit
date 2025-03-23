@@ -1,5 +1,5 @@
 import { useState } from "react";
-import NavBar from "../components/NavBar";
+
 import CategoryMenu from "../components/landing/CategoryMenu";
 import Hero from "../components/landing/Hero";
 import { FaRandom } from "react-icons/fa";
@@ -95,12 +95,14 @@ const tools: {
   data: [],
 };
 
-function Home() {
+const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   return (
     <div>
-      <NavBar />
+      {/* <NavBar /> */}
+      {/* <NavBar /> */}
+      <div className="py-3"></div>
       <Hero
         title="CyberKit"
         subtitle="The all-in-one toolbox for developers, sysadmins, and IT pros."
@@ -123,6 +125,6 @@ function Home() {
       />
     </div>
   );
-}
+};
 
 export default Home;

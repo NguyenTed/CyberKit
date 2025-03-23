@@ -2,6 +2,7 @@ package com.cyberkit.cyberkit_server.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,10 +21,11 @@ public class SecurityConfig {
                                                    CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login","/api/v1/auth/register","/api/v1/auth/refresh","/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html","api/v1/oauth2").permitAll()
-                        .requestMatchers("api/v1/account").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").permitAll()
+                        .requestMatchers("/api/v1/tools/upload").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/account").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

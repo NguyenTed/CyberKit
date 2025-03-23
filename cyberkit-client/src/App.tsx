@@ -1,12 +1,15 @@
-import Home from "./pages/Home";
-import "./App.css";
+import { ReactNode } from "react";
 
-function App() {
+type AppProps = {
+  children?: ReactNode;
+};
+
+const App: React.FC<AppProps> = ({ children }) => {
   return (
     <>
-      <Home />
+      {children}
     </>
   );
-}
+};
 
 export default App;
