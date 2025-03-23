@@ -8,11 +8,13 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import LoginPage from './pages/Login.tsx'
-import NavBar from './components/NavBar.tsx'
-import LoginSuccess from './components/OauthCallback.tsx';
-import SignupPage from './pages/SignUp.tsx';
+import NavBar from './layouts/NavBar.tsx';
 import ProfilePage from './pages/Profile.tsx';
+import AdminPanel from './features/admin/pages/AdminPanel.tsx';
+import NewToolPage from './features/admin/pages/NewToolPage.tsx';
+import LoginPage from './pages/Login.tsx';
+import SignupPage from './pages/SignUp.tsx';
+import LoginSuccess from './components/OauthCallback.tsx';
 
 
 const router = createBrowserRouter([
@@ -27,7 +29,16 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <ProfilePage/>,
+      },
+      {
+        path: "/admin",
+        element: <AdminPanel/>
+      },
+      {
+        path: "/admin/tools/new",
+        element: <NewToolPage/>
       }
+
     ]
   },
   

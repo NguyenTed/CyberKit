@@ -1,11 +1,13 @@
-import React, { useState, useRef, useEffect} from "react";
-import {useNavigate, Outlet} from "react-router-dom";
-import { useCurrentApp } from "./context/AuthContext";
+import React, { useEffect, useRef, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+
+import { notification } from "antd";
 import defaultAvatar from "../assets/images/defaultAvatar.jpg";
-import {notification} from "antd"
-import UserMenu from "./UserMenu";
-import  {ClipLoader}  from "react-spinners";
-import {   getDelayAccountAPI, logoutAPI } from "../services/AuthApiService";
+
+import { ClipLoader } from "react-spinners";
+import { useCurrentApp } from "../components/context/AuthContext";
+import UserMenu from "../components/UserMenu";
+import { getDelayAccountAPI, logoutAPI } from "../services/AuthApiService";
 const categories = [
   "Crypto",
   "Converter",
@@ -81,14 +83,18 @@ const NavBar: React.FC = () => {
     <>
       { isAppLoading === false  ?
         <div>
-          <nav className="w-full bg-white shadow-md px-6 py-4">
-            <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <nav className="w-full h-16 fixed top-0 bg-white shadow-md px-6 py-2 z-40">
+            <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
               {/* Left Side */}
-              <div className="flex space-x-8">
+              <div className="flex items-center space-x-8 h-full">
+                <img
+                  src="../../logo-no-background.png"
+                  className="w-[137px] h-[24px] cursor-pointer"
+                />
+
                 <a href="#" className="text-gray-700 hover:text-blue-600 font-medium">
                   About Us
                 </a>
-
                 {/* Category Dropdown */}
                 <div
                   className="relative"
@@ -165,7 +171,7 @@ const NavBar: React.FC = () => {
         </div>
         :
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <ClipLoader size={50}/> 
+          <ClipLoader size={50}/>
         </div>
       }
     </>

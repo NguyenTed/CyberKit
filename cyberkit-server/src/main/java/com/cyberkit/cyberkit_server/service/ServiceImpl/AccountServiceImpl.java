@@ -36,7 +36,6 @@ public class AccountServiceImpl implements AccountService {
         this.userRepository = userRepository;
     }
 
-
     @Transactional
     @Override
     public UserDTO createAccount(RegisterDTO registerDTO) {
