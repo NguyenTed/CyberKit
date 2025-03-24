@@ -11,6 +11,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -80,6 +81,18 @@ public class ToolService {
                     }
                 }
 
+                if (method.isAnnotationPresent(PostMapping.class)) {
+                    PostMapping postMapping = method.getAnnotation(PostMapping.class);
+                    for (String path : postMapping.value()) {
+                        RequestMappingInfo mappingInfo = RequestMappingInfo
+                                .paths(basePath + path)
+                                .methods(RequestMethod.POST)
+                                .build();
+                        mapping.registerMapping(mappingInfo, controllerInstance, method);
+                        System.out.println("🔗 Registered POST: " + basePath + path);
+                    }
+                }
+
                 if (method.isAnnotationPresent(RequestMapping.class)) {
                     RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
                     for (String path : requestMapping.value()) {
@@ -92,6 +105,16 @@ public class ToolService {
                     }
                 }
             }
+
+//            // Register mappings for the new bean
+//            mapping.afterPropertiesSet();
+//
+//            // Log only the mappings registered for this controller
+//            mapping.getHandlerMethods().forEach((info, method) -> {
+//                if (method.getBean().equals(controllerInstance)) {
+//                    System.out.println("🔗 Registered [" + info.getMethodsCondition() + "] " + info.getPatternsCondition());
+//                }
+//            });
 
             System.out.println("✅ Controller registered: " + controllerClass.getName());
 
