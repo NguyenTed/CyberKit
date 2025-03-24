@@ -30,4 +30,11 @@ public class ToolEntity {
 
     @Column(nullable = false)
     private String frontendPath;
+
+    @Column(name = "controller_class")
+    private String controllerClass;
+
+    @Column(name = "base_path")
+    private String basePath;
+
 }
