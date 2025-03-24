@@ -125,7 +125,7 @@ const NavBar: React.FC = () => {
                   )}
                 </div>
 
-                <a href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+                <a href="/pricing" className="text-gray-700 hover:text-blue-600 font-medium">
                   Pricing
                 </a>
               </div>

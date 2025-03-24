@@ -15,6 +15,9 @@ import NewToolPage from './features/admin/pages/NewToolPage.tsx';
 import LoginPage from './pages/Login.tsx';
 import SignupPage from './pages/SignUp.tsx';
 import LoginSuccess from './components/OauthCallback.tsx';
+import GitHubOAuthCallback from './components/Oauth2GithubCallback.tsx';
+import PricingPage from './pages/Pricing.tsx';
+import VnpayCallback from './components/VNPayCallback.tsx';
 
 
 const router = createBrowserRouter([
@@ -37,11 +40,23 @@ const router = createBrowserRouter([
       {
         path: "/admin/tools/new",
         element: <NewToolPage/>
+      },
+      {
+        path: "/pricing",
+        element: <PricingPage/>
       }
 
     ]
   },
-  
+  {
+    path: "/payment/vnpay/callback",
+    element: <VnpayCallback/>
+  }
+  ,
+  {
+    path: "/oauth2/github/callback",
+    element: <GitHubOAuthCallback/>
+  },
 
   {
     path: "/login",

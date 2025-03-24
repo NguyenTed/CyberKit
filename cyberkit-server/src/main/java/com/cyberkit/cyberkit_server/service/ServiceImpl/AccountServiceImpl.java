@@ -3,6 +3,7 @@ package com.cyberkit.cyberkit_server.service.ServiceImpl;
 import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
 import com.cyberkit.cyberkit_server.data.AccountEntity;
 import com.cyberkit.cyberkit_server.data.UserEntity;
+import com.cyberkit.cyberkit_server.dto.GithubSocialDTO;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
@@ -122,6 +123,18 @@ public class AccountServiceImpl implements AccountService {
             throw new GeneralAllException("Invalid cookie!!");
         }
         return accountEntity.getRefreshToken().equals(refreshToken);
+    }
+
+    @Override
+    public UserDTO createGithubAccount(GithubSocialDTO githubSocialDTO) {
+        if(!existsAccountByEmail(githubSocialDTO.getEmail())){
+             RegisterDTO registerDTO = modelMapper.map(githubSocialDTO,RegisterDTO.class);
+             return createAccount(registerDTO);
+        }
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(githubSocialDTO.getEmail());
+        userDTO.setName(githubSocialDTO.getName());
+        return userDTO;
     }
 
 }

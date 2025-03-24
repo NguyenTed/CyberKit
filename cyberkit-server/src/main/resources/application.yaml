@@ -25,6 +25,14 @@ spring:
             github:
               client-id: Ov23liTmyj7xZJ8xwp8h
               client-secret: a640ec42f683b6a8174925881d39bf1bb896cc8f
+              redirect-uri: http://localhost:5173/oauth2/github/callback
               scope: user:email
+    payment:
+      vnpay:
+        vnp_TmnCode: K4G45J9C
+        vnp_HashSecret: KJBSE7YUXYVXJSFCL866545N98RE4SEJ
+        vnp_PayUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+        vnp_ApiUrl: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+        vnp_ReturnUrl: http://localhost:5173/payment/vnpay/callback
 
 

@@ -38,6 +38,14 @@ const loginByGithub = () =>{
     const URL_BACKEND = "/api/v1/oauth2"
     return axios.get(URL_BACKEND);
 }
+const getGithubAuth = () =>{
+    const URL_BACKEND = "/api/v1/auth/github-login";
+    return axios.get(URL_BACKEND);
+}
+const sendGithubCode = (data:string) =>{
+    const URL_BACKEND = "/api/v1/auth/github-code/"+data;
+    return axios.post<IBackendRes<IUserLogin>>(URL_BACKEND);
+}
 
 
-export {getAccountAPI, logoutAPI,signupAPI,loginAPI, loginByGithub,getDelayAccountAPI}
+export {getAccountAPI, logoutAPI,signupAPI,loginAPI, loginByGithub,getDelayAccountAPI, getGithubAuth,sendGithubCode}
