@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ToolService {
-    private final PluginManager pluginManager = new ToolManager();
+    private final PluginManager pluginManager;
     private final ToolRepository toolRepository;
     private final ToolMapper toolMapper;
 
