@@ -44,32 +44,22 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             String email = attributes.get("email").toString();
             String name = attributes.get("login").toString();
 
-
             if(!accountService.existsAccountByEmail(email)){
                 RegisterDTO registerDTO = OAuth2UserInfoMapper.convertGithubUserInfo(name,email);
                 accountService.createAccount(registerDTO);
             }
-            UserDTO userInfo = accountService.getUserInfoByEmail(email);
             String accessToken = securityUtil.createAccessToken(email);
             String refreshToken = securityUtil.createRefreshToken(email);
             accountService.updateRefreshToken(refreshToken,email);
-
-            RestResponse<Object> res= new RestResponse<Object>();
-            res.setStatusCode(HttpStatus.OK.value());
-            res.setError("");
-            res.setMessage("Log in by Github successfully!!");
-            res.setData(new ResLoginDTO(userInfo,accessToken));
-
-            mapper.writeValue(response.getWriter(),res);
-
             Cookie cookie = new Cookie("refresh_token", refreshToken);
             cookie.setMaxAge(refreshJwtExpiration);
             cookie.setPath("/");
             cookie.setHttpOnly(true);
             cookie.setSecure(true);
             response.addCookie(cookie);
-
+            response.sendRedirect("http://localhost:5173/oauth/callback?access_token="+accessToken);
         }
     }
+
 }
 

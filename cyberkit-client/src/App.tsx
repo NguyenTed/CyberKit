@@ -1,16 +1,15 @@
-import { Routes, Route } from "react-router-dom";
-import AdminPanel from "./features/admin/pages/AdminPanel";
-import NewToolPage from "./features/admin/pages/NewToolPage";
-import Home from "./pages/Home";
+import { ReactNode } from "react";
 
-function App() {
+type AppProps = {
+  children?: ReactNode;
+};
+
+const App: React.FC<AppProps> = ({ children }) => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/admin" element={<AdminPanel />} />
-      <Route path="/admin/tools/new" element={<NewToolPage />} />
-    </Routes>
+    <>
+      {children}
+    </>
   );
-}
+};
 
 export default App;

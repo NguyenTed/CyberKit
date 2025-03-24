@@ -2,21 +2,23 @@ package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
 import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
 import com.cyberkit.cyberkit_server.data.AccountEntity;
-import com.cyberkit.cyberkit_server.data.AdminEntity;
 import com.cyberkit.cyberkit_server.data.UserEntity;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.repository.AccountRepository;
-import com.cyberkit.cyberkit_server.repository.AdminRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.ModelMap;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -94,21 +96,23 @@ public class AccountServiceImpl implements AccountService {
         if(accountEntity == null){
             throw new GeneralAllException("Invalid email!!");
         }
-        AbstractUserEntity userEntity = accountRepository.findByEmail(email).getUser();
-        if(userEntity==null){
-            throw new GeneralAllException("Invalid email!!");
+        UserDTO userDTO=  modelMapper.map(accountEntity,UserDTO.class);
+        AbstractUserEntity abstractUserEntity = accountEntity.getUser();
+        userDTO.setName(abstractUserEntity.getName());
+        userDTO.setGender(abstractUserEntity.getGender());
+
+        Date birthOfDate = abstractUserEntity.getDateOfBirth();
+        if(birthOfDate!=null){
+            LocalDate localDate = birthOfDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = localDate.format(formatter);
+            userDTO.setDateOfBirth(formattedDate);
         }
-        UserDTO userInfo = modelMapper.map(userEntity, UserDTO.class);
-        // Set email
-        userInfo.setEmail(email);
-        // Set role
-        userInfo.setRole(userEntity instanceof AdminEntity ? RoleEnum.ADMIN : RoleEnum.USER);
-        // Set isPremium
-        if(userEntity instanceof UserEntity){
-            UserEntity castedUser = (UserEntity) userEntity;
-            userInfo.setPremium(castedUser.isPremium());
+        userDTO.setPremium(false);
+        if(abstractUserEntity instanceof  UserEntity){
+            userDTO.setPremium(((UserEntity) abstractUserEntity).isPremium());
         }
-        return userInfo;
+        return userDTO;
     }
 
     @Override
@@ -119,6 +123,5 @@ public class AccountServiceImpl implements AccountService {
         }
         return accountEntity.getRefreshToken().equals(refreshToken);
     }
-
 
 }

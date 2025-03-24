@@ -1,5 +1,5 @@
 import { useState } from "react";
-import NavBar from "../layouts/NavBar";
+
 import CategoryMenu from "../components/landing/CategoryMenu";
 import Hero from "../components/landing/Hero";
 import { FaRandom } from "react-icons/fa";
@@ -100,7 +100,8 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      <NavBar />
+      {/* <NavBar /> */}
+      {/* <NavBar /> */}
       <div className="py-3"></div>
       <Hero
         title="CyberKit"
