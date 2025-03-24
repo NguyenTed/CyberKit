@@ -27,7 +27,7 @@ public class SubscriptionEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
-    private Long orderId;
+    private String TransactionNo;
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
     @Enumerated(EnumType.STRING)

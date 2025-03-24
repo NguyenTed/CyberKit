@@ -8,6 +8,7 @@ import { ClipLoader } from "react-spinners";
 import { useCurrentApp } from "../components/context/AuthContext";
 import UserMenu from "../components/UserMenu";
 import { getDelayAccountAPI, logoutAPI } from "../services/AuthApiService";
+import { CrownTwoTone } from "@ant-design/icons";
 const categories = [
   "Crypto",
   "Converter",
@@ -34,6 +35,7 @@ const NavBar: React.FC = () => {
     const fetchAccount = async () => {
         try {
             const res = await getDelayAccountAPI();
+            console.log(res.data)
             if (res.data) {
                 setUserInfo(res.data);
                 setIsAuthenticated(true);
@@ -125,9 +127,11 @@ const NavBar: React.FC = () => {
                   )}
                 </div>
 
-                <a href="/pricing" className="text-gray-700 hover:text-blue-600 font-medium">
-                  Pricing
-                </a>
+                {!userInfo?.premium && (
+                  <a href="/pricing" className="text-gray-700 hover:text-blue-600 font-medium">
+                    Pricing
+                  </a>
+                )}
               </div>
 
               {/* Right Side */}
@@ -135,6 +139,14 @@ const NavBar: React.FC = () => {
                 {userInfo ? (
                   
                   <div className="flex items-center space-x-2 hover:text-blue-600" onClick={toggleMenu}>
+                    {userInfo.premium && (
+                      <span 
+                        className="ml-1 text-yellow-500 relative cursor-pointer" 
+                        title="PREMIUM"
+                      >
+                        <CrownTwoTone />
+                      </span>
+                    )}
                     <img 
                       src={defaultAvatar} 
                       alt="User Avatar" 

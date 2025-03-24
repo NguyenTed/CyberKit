@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Spin, Result, Button } from "antd";
 
+import { updateSubscription } from "../services/SubscriptionApiService";
 
 const VnpayCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -12,15 +13,38 @@ const VnpayCallback: React.FC = () => {
   useEffect(() => {
     const verifyPayment = async () => {
       setLoading(true);
-      const urlParams = new URLSearchParams(window.location.search);
-      console.log(urlParams)
-      console.log 
-
+      //const urlParams = new URLSearchParams(window.location.search);
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryParams = Object.fromEntries(searchParams.entries());
+      console.log("subscriptionId:", queryParams.subscriptionId);
+      handleUpdateSubscriptions(queryParams.subscriptionId, queryParams.vnp_TransactionNo, queryParams.vnp_PayDate, queryParams.vnp_TransactionStatus)
 
     };
 
     verifyPayment();
   }, [searchParams]);
+
+  const handleUpdateSubscriptions = async (subscriptionId: string, vnp_TransactionNo: string, vnp_PayDate: string, vnp_TransactionStatus: string) => {
+    try {
+     
+      const res = await updateSubscription(subscriptionId, vnp_TransactionNo, vnp_PayDate, vnp_TransactionStatus);
+      console.log("res: ", res);
+      if(res &&res.statusCode === 200 ) {
+        console.log("success")
+        setLoading(false);
+        setStatus("success");
+        
+      }
+      else{
+        console.error("GitHub login unsuccessfully!",);
+        setStatus("error");
+      }
+      
+    } catch (error) {
+      console.error("GitHub login error:", error);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -47,10 +71,10 @@ const VnpayCallback: React.FC = () => {
       ) : (
         <Result
           status="error"
-          title="Thanh toán thất bại!"
-          subTitle="Có lỗi xảy ra khi xử lý thanh toán."
+          title="Transaction Failed!"
+          subTitle="Please check your credit card!"
           extra={
-            <Button type="primary" onClick={() => navigate("/")}>
+            <Button type="primary" onClick={() => navigate("/pricing")}>
               Thử lại
             </Button>
           }

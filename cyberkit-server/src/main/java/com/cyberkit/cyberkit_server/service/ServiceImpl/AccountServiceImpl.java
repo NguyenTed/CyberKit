@@ -2,15 +2,19 @@ package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
 import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
 import com.cyberkit.cyberkit_server.data.AccountEntity;
+import com.cyberkit.cyberkit_server.data.SubscriptionEntity;
 import com.cyberkit.cyberkit_server.data.UserEntity;
 import com.cyberkit.cyberkit_server.dto.GithubSocialDTO;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
+import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.repository.AccountRepository;
+import com.cyberkit.cyberkit_server.repository.SubscriptionRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
+import com.cyberkit.cyberkit_server.service.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +24,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -28,13 +33,16 @@ public class AccountServiceImpl implements AccountService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final UserService userService;
 
 
-    public AccountServiceImpl(AccountRepository accountRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder, UserRepository userRepository, UserService userService) {
         this.accountRepository = accountRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+
+        this.userService = userService;
     }
 
     @Transactional
@@ -112,6 +120,10 @@ public class AccountServiceImpl implements AccountService {
         userDTO.setPremium(false);
         if(abstractUserEntity instanceof  UserEntity){
             userDTO.setPremium(((UserEntity) abstractUserEntity).isPremium());
+            //Check the valid expired premium
+            if(userDTO.isPremium()&& !userService.checkValidSubscription(abstractUserEntity.getId())){
+                userDTO.setPremium(false);
+            }
         }
         return userDTO;
     }
