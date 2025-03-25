@@ -21,10 +21,12 @@ public class SecurityConfig {
                                                    CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/tools").permitAll()
                         .requestMatchers("/api/v1/tools/upload").permitAll()
-                        .requestMatchers("/api/v1/auth/login", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()
+                        .requestMatchers("/api/v1/auth/login","api/v1/auth/signup", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/account").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )

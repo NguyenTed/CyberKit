@@ -9,9 +9,9 @@ instance.interceptors.request.use(function (config) {
 
     const url = config.url;
     console.log(config)
-    if (url && (url.includes('signup') || url.includes('login'))) {
-        console.log('kykyky')
+    if (url && (url.includes('signup')||url.includes('github') || url.includes('login'))) {
         // Skip adding the Authorization token
+        console.log("kykyky")
         return config;
     }
     console.log("url: "+url);

@@ -20,7 +20,7 @@ declare global {
         email: string;
         name: string;
         role: string;
-        isPremium: boolean;
+        premium: boolean;
         gender: string;
         dateOfBirth: string;
     }
