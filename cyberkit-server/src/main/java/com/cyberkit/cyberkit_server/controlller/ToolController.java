@@ -30,7 +30,8 @@ public class ToolController {
 
     @PostMapping
     public ResponseEntity<String> upload(
-            @RequestParam("file") MultipartFile file,
+            @RequestParam("backend") MultipartFile backend,
+            @RequestParam("frontend") MultipartFile frontend,
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("version") String version,
@@ -47,9 +48,10 @@ public class ToolController {
         request.setBasePath(basePath);
 
         try {
-            toolService.uploadTool(file, request);
+            toolService.uploadTool(backend, frontend, request);
             return ResponseEntity.ok("Tool uploaded successfully.");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
         }
     }

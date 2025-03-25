@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import java.lang.reflect.Method;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,79 +44,70 @@ public class ToolService {
         return toolRepository.findAll().stream().map(toolMapper::toToolResponse).toList();
     }
 
-    public void uploadTool(MultipartFile file, ToolUploadRequest request) throws IOException {
-        String jarName = file.getOriginalFilename();
+    public void uploadTool(MultipartFile backend, MultipartFile frontend, ToolUploadRequest request) throws IOException {
+        // Save backend .jar to /tools
+        String jarName = backend.getOriginalFilename();
         Path jarPath = Paths.get("tools", jarName);
         Files.createDirectories(jarPath.getParent());
-        Files.copy(file.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(backend.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
 
+        // Save frontend index.js to /tools/{toolId}/frontend/
+        String toolId = request.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        Path frontendPath = Paths.get("tools", toolId, "frontend");
+        Files.createDirectories(frontendPath);
+        Path targetJs = frontendPath.resolve("index.js");
+        Files.copy(frontend.getInputStream(), targetJs, StandardCopyOption.REPLACE_EXISTING);
+
+        // Load and start plugin
         String pluginId = pluginManager.loadPlugin(jarPath);
         pluginManager.startPlugin(pluginId);
+
         PluginWrapper wrapper = pluginManager.getPlugin(pluginId);
         PluginDescriptor descriptor = wrapper.getDescriptor();
         ClassLoader pluginClassLoader = wrapper.getPluginClassLoader();
 
-        String controllerClassName = request.getControllerClass();
-        String basePath = request.getBasePath();
-        String beanName = "tool_" + request.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-
+        // Dynamically register controller
         try {
+            String controllerClassName = request.getControllerClass();
             Class<?> controllerClass = pluginClassLoader.loadClass(controllerClassName);
             Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
 
             ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) context;
             configurableContext.getBeanFactory().autowireBean(controllerInstance);
+
+            String beanName = "tool_" + toolId;
             configurableContext.getBeanFactory().registerSingleton(beanName, controllerInstance);
 
             RequestMappingHandlerMapping mapping = configurableContext.getBean(RequestMappingHandlerMapping.class);
 
             for (Method method : controllerClass.getDeclaredMethods()) {
+                RequestMappingInfo info = null;
+
                 if (method.isAnnotationPresent(GetMapping.class)) {
-                    GetMapping getMapping = method.getAnnotation(GetMapping.class);
-                    for (String path : getMapping.value()) {
-                        RequestMappingInfo info = RequestMappingInfo
-                                .paths(basePath + path)
-                                .methods(RequestMethod.GET)
-                                .build();
+                    for (String path : method.getAnnotation(GetMapping.class).value()) {
+                        info = RequestMappingInfo.paths(request.getBasePath() + path).methods(RequestMethod.GET).build();
                         mapping.registerMapping(info, controllerInstance, method);
-                        System.out.println("🔗 Registered GET: " + path);
+                        System.out.println("🔗 Registered GET: " + info.getPatternsCondition());
                     }
                 }
 
                 if (method.isAnnotationPresent(PostMapping.class)) {
-                    PostMapping postMapping = method.getAnnotation(PostMapping.class);
-                    for (String path : postMapping.value()) {
-                        RequestMappingInfo mappingInfo = RequestMappingInfo
-                                .paths(basePath + path)
-                                .methods(RequestMethod.POST)
-                                .build();
-                        mapping.registerMapping(mappingInfo, controllerInstance, method);
-                        System.out.println("🔗 Registered POST: " + basePath + path);
+                    for (String path : method.getAnnotation(PostMapping.class).value()) {
+                        info = RequestMappingInfo.paths(request.getBasePath() + path).methods(RequestMethod.POST).build();
+                        mapping.registerMapping(info, controllerInstance, method);
+                        System.out.println("🔗 Registered POST: " + info.getPatternsCondition());
                     }
                 }
 
                 if (method.isAnnotationPresent(RequestMapping.class)) {
-                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                    for (String path : requestMapping.value()) {
-                        RequestMappingInfo info = RequestMappingInfo
-                                .paths(basePath + path)
-                                .methods(requestMapping.method())
-                                .build();
+                    RequestMapping rm = method.getAnnotation(RequestMapping.class);
+                    for (String path : rm.value()) {
+                        info = RequestMappingInfo.paths(request.getBasePath() + path).methods(rm.method()).build();
                         mapping.registerMapping(info, controllerInstance, method);
-                        System.out.println("🔗 Registered: " + path);
+                        System.out.println("🔗 Registered: " + info.getPatternsCondition());
                     }
                 }
             }
-
-//            // Register mappings for the new bean
-//            mapping.afterPropertiesSet();
-//
-//            // Log only the mappings registered for this controller
-//            mapping.getHandlerMethods().forEach((info, method) -> {
-//                if (method.getBean().equals(controllerInstance)) {
-//                    System.out.println("🔗 Registered [" + info.getMethodsCondition() + "] " + info.getPatternsCondition());
-//                }
-//            });
 
             System.out.println("✅ Controller registered: " + controllerClass.getName());
 
@@ -123,6 +116,7 @@ public class ToolService {
             e.printStackTrace();
         }
 
+        // Save tool metadata to database
         ToolEntity tool = new ToolEntity();
         tool.setName(request.getName());
         tool.setDescription(request.getDescription());
@@ -130,9 +124,9 @@ public class ToolService {
         tool.setPremium(false);
         tool.setEnabled(false);
         tool.setBackendPath(jarPath.toString());
-        tool.setFrontendPath(request.getFrontendPath());
-        tool.setControllerClass(controllerClassName);
-        tool.setBasePath(basePath);
+        tool.setFrontendPath("/plugins/" + toolId + "/frontend/index.js");
+        tool.setControllerClass(request.getControllerClass());
+        tool.setBasePath(request.getBasePath());
 
         toolRepository.save(tool);
     }
