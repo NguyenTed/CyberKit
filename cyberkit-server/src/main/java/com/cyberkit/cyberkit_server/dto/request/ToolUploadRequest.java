@@ -16,4 +16,7 @@ public class ToolUploadRequest {
     private boolean isEnabled;
     private boolean isPremium;
     private String frontendPath;
+    private String controllerClass;
+    private String basePath;
+
 }

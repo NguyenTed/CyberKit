@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import {Form, Input,Button, Divider, message, notification} from "antd"
 import { PiGithubLogoDuotone } from "react-icons/pi";
-import { loginAPI } from "../services/AuthApiService";
+import { getGithubAuth, loginAPI } from "../services/AuthApiService";
 import { useCurrentApp } from "../components/context/AuthContext";
 
 function LoginPage(){
@@ -40,7 +40,9 @@ function LoginPage(){
         }
     };
     const loginByGithub = async () =>{
-        window.location.href = "http://localhost:8080/cyberkit/api/v1/oauth2/authorize/github?redirect_uri=http://localhost:5173/oauth2/callback";
+        const res = await getGithubAuth();
+        console.log(res);
+        window.location.href = res.data;
     }
 
 

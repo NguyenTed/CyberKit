@@ -47,6 +47,7 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             if(!accountService.existsAccountByEmail(email)){
                 RegisterDTO registerDTO = OAuth2UserInfoMapper.convertGithubUserInfo(name,email);
                 accountService.createAccount(registerDTO);
+
             }
             String accessToken = securityUtil.createAccessToken(email);
             String refreshToken = securityUtil.createRefreshToken(email);
