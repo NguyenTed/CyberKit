@@ -35,4 +35,6 @@ spring:
         vnp_ApiUrl: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
         vnp_ReturnUrl: http://localhost:5173/payment/vnpay/callback
 
-
+logging:
+  level:
+    org.springframework.web.servlet.resource: DEBUG
