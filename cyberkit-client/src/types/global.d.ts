@@ -36,5 +36,6 @@ declare global {
         gender: string;
     }
     
+    
 }
  

@@ -134,6 +134,7 @@ public class AccountServiceImpl implements AccountService {
         if(accountEntity==null){
             throw new GeneralAllException("Invalid cookie!!");
         }
+
         return accountEntity.getRefreshToken().equals(refreshToken);
     }
 

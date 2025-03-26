@@ -15,7 +15,6 @@ const GitHubOAuthCallback = () => {
     } else {
       console.error("GitHub login failed: No code received");
     }
-   
   }, []);
 
   const handleGitHubLogin = async (code: string) => {
@@ -23,7 +22,7 @@ const GitHubOAuthCallback = () => {
       console.log(code);
       const res = await sendGithubCode(code);
       if(res.statusCode === 200 && res.data) {
-        localStorage.setItem("access_token", res.data.accessToken);
+        localStorage.setItem("access_token", res.data);
         navigate("/");
       }
       else{

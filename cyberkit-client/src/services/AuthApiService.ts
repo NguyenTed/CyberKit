@@ -41,8 +41,14 @@ const getGithubAuth = () => {
 };
 const sendGithubCode = (data: string) => {
   const URL_BACKEND = "/api/v1/auth/github-code/" + data;
-  return axios.post<IBackendRes<IUserLogin>>(URL_BACKEND);
+  return axios.post<IBackendRes<string>>(URL_BACKEND);
 };
+const getRefreshToken = () => {
+  const URL_BACKEND = "/api/v1/auth/refresh";
+  return axios.get<IBackendRes<string>>(URL_BACKEND,{
+        withCredentials: true
+    });
+}
 
 export {
   getAccountAPI,
@@ -53,4 +59,5 @@ export {
   getDelayAccountAPI,
   getGithubAuth,
   sendGithubCode,
+  getRefreshToken
 };
