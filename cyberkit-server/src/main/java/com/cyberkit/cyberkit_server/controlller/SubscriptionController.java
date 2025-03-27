@@ -24,5 +24,4 @@ public class SubscriptionController {
         }
         return ResponseEntity.ok().body(new RestResponse(401,"","Transaction failed!! Please check the credit card!!","1"));
     }
-
 }

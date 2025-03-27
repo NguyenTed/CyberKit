@@ -1,15 +1,15 @@
 package com.cyberkit.cyberkit_server.data;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "tools")
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ToolEntity {
@@ -22,8 +22,10 @@ public class ToolEntity {
 
     private String version;
     private String description;
-    private boolean isEnabled;
-    private boolean isPremium;
+    @Column(name = "is_enabled")
+    private boolean enabled;
+    @Column(name = "is_premium")
+    private boolean premium;
 
     @Column(nullable = false)
     private String backendPath;
@@ -34,7 +36,7 @@ public class ToolEntity {
     @Column(name = "controller_class")
     private String controllerClass;
 
-    @Column(name = "base_path")
-    private String basePath;
+    @Column(name = "plugin_id", unique = true)
+    private String pluginId;
 
 }

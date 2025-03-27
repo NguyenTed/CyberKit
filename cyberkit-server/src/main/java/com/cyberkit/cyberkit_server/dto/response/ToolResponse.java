@@ -16,7 +16,7 @@ public class ToolResponse {
     private String name;
     private String description;
     private String version;
-    private boolean isEnabled;
-    private boolean isPremium;
+    private boolean enabled;
+    private boolean premium;
     private String frontendPath;
 }

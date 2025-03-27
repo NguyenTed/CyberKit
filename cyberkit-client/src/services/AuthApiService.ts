@@ -10,7 +10,10 @@ const getDelayAccountAPI = () => {
 };
 const logoutAPI = () => {
   const URL_BACKEND = "/api/v1/auth/logout";
-  return axios.post(URL_BACKEND);
+  return axios.post(URL_BACKEND,{},
+  {
+    withCredentials: true,
+  });
 };
 const signupAPI = (datas: TRegisterReq) => {
   const URL_BACKEND = "/api/v1/auth/signup";
@@ -29,28 +32,36 @@ const loginAPI = (email: string, password: string) => {
     email: email,
     password: password,
   };
-  return axios.post<IBackendRes<IUserLogin>>(URL_BACKEND, data);
+  return axios.post<IBackendRes<IUserLogin>>(URL_BACKEND, data,
+  {
+    withCredentials: true,
+  });
 };
-const loginByGithub = () => {
-  const URL_BACKEND = "/api/v1/oauth2";
-  return axios.get(URL_BACKEND);
-};
+
 const getGithubAuth = () => {
   const URL_BACKEND = "/api/v1/auth/github-login";
   return axios.get(URL_BACKEND);
 };
 const sendGithubCode = (data: string) => {
   const URL_BACKEND = "/api/v1/auth/github-code/" + data;
-  return axios.post<IBackendRes<IUserLogin>>(URL_BACKEND);
+  return axios.post<IBackendRes<string>>(URL_BACKEND,{},
+  {
+    withCredentials: true,
+  });
 };
-
+const getRefreshToken = () => {
+  const URL_BACKEND = "/api/v1/auth/refresh";
+  return axios.get<IBackendRes<string>>(URL_BACKEND, {
+    withCredentials: true, 
+  });
+};
 export {
   getAccountAPI,
   logoutAPI,
   signupAPI,
   loginAPI,
-  loginByGithub,
   getDelayAccountAPI,
   getGithubAuth,
   sendGithubCode,
+  getRefreshToken
 };
