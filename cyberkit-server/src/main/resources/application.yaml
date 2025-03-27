@@ -17,10 +17,10 @@ spring:
       show-sql: true
     jwt:
       key: rJeZbuqi8K8aGeoHrDOIANmdZUJvMR6lPByuoBNGCs+Q5YuycLMUA0U4JV8DNEpS0KbHrCKbXqn7BzAsRF8Iew==
-      # 1 hour = 60 * 60 = 3600
-      access-expiration-in-seconds: 3600
-      # 100 hour = 60 * 60 * 100 = 360000
-      refresh-expiration-in-seconds: 360000
+      # 6 hour = 60 * 60 * 6  = 21600
+      access-expiration-in-seconds: 21600
+      # 7 days = 60 * 60 * 7 * 24 = 604800
+      refresh-expiration-in-seconds: 604800
     security:
       oauth2:
         client:

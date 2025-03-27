@@ -66,15 +66,17 @@ const NavBar: React.FC = () => {
 
   const handleLogout = async () => {
     const  res= await logoutAPI();
+    console.log("logout res: ", res);
     if(res.data){
       setIsAuthenticated(false);
       setUserInfo(null);
       localStorage.removeItem("access_token");
+
       navigate("/");
     }
     else{
       notification.error({
-          message: "Error login user",
+          message: "Error logout user",
           description: "Logout failed!",
       });
     }
@@ -92,6 +94,7 @@ const NavBar: React.FC = () => {
                 <img
                   src="../../logo-no-background.png"
                   className="w-[137px] h-[24px] cursor-pointer"
+                  onClick={() => navigate("/")}
                 />
 
                 <a href="#" className="text-gray-700 hover:text-blue-600 font-medium">

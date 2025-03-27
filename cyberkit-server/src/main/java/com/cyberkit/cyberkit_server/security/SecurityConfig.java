@@ -31,7 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/tool/**").permitAll()
                         .requestMatchers("/api/bcrypt/hash", "/api/bcrypt/compare", "/api/ascii/text-to-binary", "/api/ascii/binary-to-text").permitAll()
                         .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()
-                        .requestMatchers("/api/v1/auth/login","api/v1/auth/signup", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/auth/login","api/v1/auth/signup","api/v1/auth/refresh", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/account").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -46,8 +46,7 @@ public class SecurityConfig {
 //                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
                 .formLogin(f->f.disable())
                 .oauth2Login(oauth2 -> {
-                    oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                            .successHandler(oAuth2LoginSuccessHandler);
+                    oauth2.disable();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable());

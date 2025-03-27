@@ -133,13 +133,6 @@ public class AuthController {
             throw new GeneralAllException("Invalid cookie!");
         String accessToken  = securityUtil.createAccessToken(userEmail);
         String newRefreshToken = securityUtil.createRefreshToken(userEmail);
-        // Format ResLoginDTO response
-        ResLoginDTO resLoginDTO= new ResLoginDTO();
-        // Extract the user info
-        UserDTO userInfo = accountService.getUserInfoByEmail(userEmail);
-        // Set the user info and access token to resLoginDTO
-        resLoginDTO.setUser(userInfo);
-        resLoginDTO.setAccessToken(accessToken);
         accountService.updateRefreshToken(newRefreshToken,userEmail);
         // Save cookie
         ResponseCookie responseCookie= ResponseCookie
@@ -151,12 +144,12 @@ public class AuthController {
                 .build();
         return ResponseEntity.status(200)
                 .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
-                .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
+                .body(new RestResponse<>( 200,"","Login successfully!",accessToken));
 
     }
 
     @PostMapping("logout")
-    public ResponseEntity logout(){
+    public ResponseEntity<RestResponse<String>> logout(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         accountService.updateRefreshToken(null,authentication.getName());
         ResponseCookie deleteSpringCookie=ResponseCookie
@@ -170,10 +163,10 @@ public class AuthController {
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
-                .body("Logout successfully");
+                .body(new RestResponse<>(200,"","","logout successfully"));
     }
     @GetMapping("/github-login")
-    public ResponseEntity<RestResponse> getGithubAthUrl(){
+    public ResponseEntity<RestResponse<String>> getGithubAthUrl(){
         String githubAuthUrl = String.format(
                 "https://github.com/login/oauth/authorize?client_id=%s&client_secret=%s&redirect_uri=%s&scope=user",
                 clientId,
@@ -185,17 +178,11 @@ public class AuthController {
     }
 
     @PostMapping("github-code/{code}")
-    public ResponseEntity<RestResponse> solveAccesstoken(@PathVariable String code) throws IOException {
+    public ResponseEntity<RestResponse<String>> solveAccesstoken(@PathVariable String code) throws IOException {
         GithubSocialDTO githubSocialDTO = socialAuthService.fetchGitHubUserProfile(code);
         UserDTO userDTO = accountService.createGithubAccount(githubSocialDTO);
         String accessToken = securityUtil.createAccessToken(userDTO.getEmail());
         String refreshToken = securityUtil.createRefreshToken(userDTO.getEmail());
-        ResLoginDTO resLoginDTO= new ResLoginDTO();
-        // Extract the user info
-        UserDTO userInfo = accountService.getUserInfoByEmail(userDTO.getEmail());
-        // Set the user info and access token to resLoginDTO
-        resLoginDTO.setUser(userInfo);
-        resLoginDTO.setAccessToken(accessToken);
         accountService.updateRefreshToken(refreshToken,userDTO.getEmail());
         // Save cookie
         ResponseCookie responseCookie= ResponseCookie
@@ -207,7 +194,7 @@ public class AuthController {
                 .build();
         return ResponseEntity.status(200)
                 .header(HttpHeaders.SET_COOKIE,responseCookie.toString())
-                .body(new RestResponse<>( 200,"","Login successfully!",resLoginDTO));
+                .body(new RestResponse<>( 200,"","Login successfully!",accessToken));
 
     }
 
