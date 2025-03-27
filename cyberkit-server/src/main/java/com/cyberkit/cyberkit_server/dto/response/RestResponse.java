@@ -1,21 +1,20 @@
 package com.cyberkit.cyberkit_server.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.SecondaryRow;
+import lombok.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RestResponse<K> {
-    private int statusCode;
+    @Builder.Default
+    private int statusCode = 200;
     private String error;
     // message is string or list.
     private Object message;
     private K data;
-
 }
 

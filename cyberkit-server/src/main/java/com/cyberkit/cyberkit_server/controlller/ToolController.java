@@ -1,22 +1,15 @@
 package com.cyberkit.cyberkit_server.controlller;
 
-import com.cyberkit.cyberkit_server.data.ToolEntity;
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
+import com.cyberkit.cyberkit_server.dto.response.RestResponse;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.service.ToolService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -24,32 +17,25 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ToolController {
     private final ToolService toolService;
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @GetMapping
-    public List<ToolResponse> getAllTools() {
-        System.out.println("ToolController.getAllTools");
-        return toolService.getAllTools();
+    public RestResponse<List<ToolResponse>> getAllTools() {
+        log.info("ToolController.getAllTools");
+        return RestResponse.<List<ToolResponse>>builder()
+                .data(toolService.getAllTools())
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getToolById(@PathVariable String id) {
-        System.out.println("ToolController.getToolById");
-        Optional<ToolEntity> toolOpt = toolService.getToolById(id);
-
-        if (toolOpt.isPresent()) {
-            System.out.println("finish ToolController.getToolById");
-            return ResponseEntity.ok(toolOpt.get());
-        } else {
-            System.out.println("finish (not found) ToolController.getToolById");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tool not found");
-        }
-
+    public RestResponse<ToolResponse> getToolById(@PathVariable String id) {
+        log.info("ToolController.getToolById");
+        return RestResponse.<ToolResponse>builder()
+                .data(toolService.getToolById(id))
+                .build();
     }
 
     @PostMapping
-    public ResponseEntity<String> upload(
+    public RestResponse<String> upload(
             @RequestParam("backend") MultipartFile backend,
             @RequestParam("frontend") MultipartFile frontend,
             @RequestParam("name") String name,
@@ -59,6 +45,7 @@ public class ToolController {
             @RequestParam("controllerClass") String controllerClass,
             @RequestParam("basePath") String basePath
     ) {
+        log.info("ToolController.upload");
         ToolUploadRequest request = new ToolUploadRequest();
         request.setName(name);
         request.setDescription(description);
@@ -69,10 +56,15 @@ public class ToolController {
 
         try {
             toolService.uploadTool(backend, frontend, request);
-            return ResponseEntity.ok("Tool uploaded successfully.");
+            return RestResponse.<String>builder()
+                    .data("Upload successfully")
+                    .build();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Upload failed: " + e.getMessage());
+            return RestResponse.<String>builder()
+                    .statusCode(500)
+                    .error("Upload failed" + e.getMessage())
+                    .build();
         }
     }
 }

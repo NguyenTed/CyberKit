@@ -18,5 +18,4 @@ public class ToolUploadRequest {
     private String frontendPath;
     private String controllerClass;
     private String basePath;
-
 }

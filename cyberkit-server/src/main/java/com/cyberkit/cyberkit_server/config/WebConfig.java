@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry
                 .addResourceHandler("/plugins/**")
-                .addResourceLocations(absPath)
+                .addResourceLocations("file:tools/")
                 .setCachePeriod(0);
     }
 }
