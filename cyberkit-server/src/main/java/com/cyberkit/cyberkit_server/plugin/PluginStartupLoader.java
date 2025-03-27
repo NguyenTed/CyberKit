@@ -58,7 +58,7 @@ public class PluginStartupLoader {
                 String beanName = "tool_" + pluginId;
                 if (!configCtx.getBeanFactory().containsSingleton(beanName)) {
                     configCtx.getBeanFactory().registerSingleton(beanName, controllerInstance);
-                    registerPluginController(controllerInstance, controllerClass, tool.getBasePath());
+                    registerPluginController(controllerInstance, controllerClass, tool.getPluginId());
                 }
 
                 System.out.println("✅ Loaded plugin on startup: " + tool.getName());
@@ -70,7 +70,7 @@ public class PluginStartupLoader {
         }
     }
 
-    private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String basePath) {
+    private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String pluginId) {
         RequestMappingHandlerMapping mapping = context.getBean(RequestMappingHandlerMapping.class);
         Map<RequestMappingInfo, HandlerMethod> existingMappings = mapping.getHandlerMethods();
 
@@ -79,8 +79,9 @@ public class PluginStartupLoader {
 
             if (method.isAnnotationPresent(GetMapping.class)) {
                 for (String path : method.getAnnotation(GetMapping.class).value()) {
+                    var endpoint = "/api/tool/" + pluginId + path;
                     info = RequestMappingInfo
-                            .paths(basePath + path) // basePath might be "" or "/api/tool"
+                            .paths(endpoint)
                             .methods(RequestMethod.GET)
                             .build();
 
@@ -95,8 +96,9 @@ public class PluginStartupLoader {
 
             if (method.isAnnotationPresent(PostMapping.class)) {
                 for (String path : method.getAnnotation(PostMapping.class).value()) {
+                    var endpoint = "/api/tool/" + pluginId + path;
                     info = RequestMappingInfo
-                            .paths(basePath + path) // basePath might be "" or "/api/tool"
+                            .paths(endpoint) // basePath might be "" or "/api/tool"
                             .methods(RequestMethod.POST)
                             .build();
                     if (!isAlreadyMapped(existingMappings, info)) {

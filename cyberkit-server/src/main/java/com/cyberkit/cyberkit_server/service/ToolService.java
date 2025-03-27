@@ -67,19 +67,19 @@ public class ToolService {
     }
 
     public void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception {
-        String toolId = request.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        String pluginId = request.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
         // Define base paths
-        Path pluginRootDir = Paths.get("tools", toolId);
+        Path pluginRootDir = Paths.get("tools", pluginId);
         Path backendDir = pluginRootDir.resolve("backend");
         Path frontendDir = pluginRootDir.resolve("frontend");
 
-        // 1. Save backend jar to /tools/{toolId}/backend/{toolId}.jar
+        // 1. Save backend jar to /tools/{pluginId}/backend/{pluginId}.jar
         Files.createDirectories(backendDir);
-        Path jarPath = backendDir.resolve(toolId + ".jar");
+        Path jarPath = backendDir.resolve(pluginId + ".jar");
         Files.copy(backendJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
 
-        // 2. Extract frontend zip to /tools/{toolId}/frontend/
+        // 2. Extract frontend zip to /tools/{pluginId}/frontend/
         Files.createDirectories(frontendDir);
         try (ZipInputStream zis = new ZipInputStream(frontendZip.getInputStream())) {
             ZipEntry entry;
@@ -99,7 +99,7 @@ public class ToolService {
         }
 
         // 3. Load backend plugin jar
-        PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, toolId);
+        PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
         ClassLoader classLoader = wrapper.getClassLoader();
 
         // 4. Dynamically register plugin controller
@@ -110,14 +110,14 @@ public class ToolService {
 
             ConfigurableApplicationContext configCtx = (ConfigurableApplicationContext) context;
             configCtx.getBeanFactory().autowireBean(controllerInstance);
-            configCtx.getBeanFactory().registerSingleton("tool_" + toolId, controllerInstance);
+            configCtx.getBeanFactory().registerSingleton("tool_" + pluginId, controllerInstance);
 
             System.out.println("🧪 Methods in controller:");
             for (Method method : controllerClass.getDeclaredMethods()) {
                 System.out.println(" - " + method.getName());
             }
 
-            registerPluginController(controllerInstance, controllerClass, request.getBasePath());
+            registerPluginController(controllerInstance, controllerClass, pluginId);
         } catch (Exception e) {
             log.error("❌ Failed to register plugin controller.");
             e.printStackTrace();
@@ -131,16 +131,16 @@ public class ToolService {
         tool.setPremium(false);
         tool.setEnabled(false);
         tool.setBackendPath(jarPath.toString());
-        tool.setFrontendPath("/plugins/" + toolId + "/frontend/index.html");
+        tool.setFrontendPath("/plugins/" + pluginId + "/frontend/index.html");
         tool.setControllerClass(request.getControllerClass());
-        tool.setBasePath(request.getBasePath()); // optional, no longer prepended
+        tool.setPluginId(pluginId);
 
         toolRepository.save(tool);
     }
 
     public void updateTool(MultipartFile newJar, MultipartFile newFrontendZip, String toolId) throws Exception {
         var tool = toolRepository.findById(UUID.fromString(toolId)).orElseThrow(() -> new RuntimeException("Tool not found"));
-        var pluginId = tool.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        var pluginId = tool.getPluginId();
         // 1. Paths
         Path pluginRootDir = Paths.get("tools", pluginId);
         Path backendDir = pluginRootDir.resolve("backend");
@@ -203,8 +203,7 @@ public class ToolService {
         Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
         beanFactory.autowireBean(controllerInstance);
         beanFactory.registerSingleton(beanName, controllerInstance);
-        registerPluginController(controllerInstance, controllerClass, tool.getBasePath());
-
+        registerPluginController(controllerInstance, controllerClass, pluginId);
 
         System.out.println("✅ Plugin updated and reloaded: " + pluginId);
     }
@@ -213,7 +212,7 @@ public class ToolService {
         // 1. Get the plugin
         ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
                 .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
-        var pluginId = tool.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        var pluginId = tool.getPluginId();
 
         // 2. Unregister controller
         String controllerClassName = tool.getControllerClass();
@@ -255,7 +254,7 @@ public class ToolService {
         System.out.println("🗑️ Plugin deleted successfully: " + pluginId);
     }
 
-    private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String basePath) {
+    private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String pluginId) {
         RequestMappingHandlerMapping mapping = context.getBean(RequestMappingHandlerMapping.class);
 
         for (Method method : controllerClass.getDeclaredMethods()) {
@@ -265,10 +264,11 @@ public class ToolService {
                 String[] paths = method.getAnnotation(GetMapping.class).value();
                 for (String path : paths) {
                     info = RequestMappingInfo
-                            .paths(joinPaths(basePath, path))
+                            .paths(getApiEndpoint(pluginId, path))
                             .methods(RequestMethod.GET)
                             .build();
                     mapping.registerMapping(info, controllerInstance, method);
+                    log.info("API endpoint: ", getApiEndpoint(pluginId, path));
                     log.info("🔗 Registered GET: {}", info.getPatternValues());
                 }
             }
@@ -277,10 +277,11 @@ public class ToolService {
                 String[] paths = method.getAnnotation(PostMapping.class).value();
                 for (String path : paths) {
                     info = RequestMappingInfo
-                            .paths(joinPaths(basePath, path))
+                            .paths(getApiEndpoint(pluginId, path))
                             .methods(RequestMethod.POST)
                             .build();
                     mapping.registerMapping(info, controllerInstance, method);
+                    log.info("API endpoint: ", getApiEndpoint(pluginId, path));
                     log.info("🔗 Registered POST: {}", info.getPatternValues());
                 }
             }
@@ -289,10 +290,11 @@ public class ToolService {
                 RequestMapping rm = method.getAnnotation(RequestMapping.class);
                 for (String path : rm.value()) {
                     info = RequestMappingInfo
-                            .paths(joinPaths(basePath, path))
+                            .paths(getApiEndpoint(pluginId, path))
                             .methods(rm.method())
                             .build();
                     mapping.registerMapping(info, controllerInstance, method);
+                    log.info("API endpoint: ", getApiEndpoint(pluginId, path));
                     log.info("🔗 Registered: {}", info.getPatternValues());
                 }
             }
@@ -301,9 +303,9 @@ public class ToolService {
         log.info("✅ Controller registered: {}", controllerClass.getName());
     }
 
-    private String joinPaths(String base, String path) {
-        if (base == null) base = "";
+    private String getApiEndpoint(String pluginId, String path) {
+        if (pluginId == null) pluginId = "";
         if (path == null) path = "";
-        return (base + "/" + path).replaceAll("//+", "/");
+        return ("/api/tool/" + pluginId + path).replaceAll("//+", "/");
     }
 }

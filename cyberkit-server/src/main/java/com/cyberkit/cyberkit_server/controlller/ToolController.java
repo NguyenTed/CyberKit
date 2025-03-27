@@ -6,7 +6,6 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,24 +53,20 @@ public class ToolController {
     }
 
     @PostMapping
-    public RestResponse<Void> upload(
+    public RestResponse<Void> uploadTool(
             @RequestParam("backend") MultipartFile backend,
             @RequestParam("frontend") MultipartFile frontend,
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("version") String version,
-            @RequestParam("frontendPath") String frontendPath,
-            @RequestParam("controllerClass") String controllerClass,
-            @RequestParam("basePath") String basePath
+            @RequestParam("controllerClass") String controllerClass
     ) {
         log.info("ToolController.upload");
         ToolUploadRequest request = new ToolUploadRequest();
         request.setName(name);
         request.setDescription(description);
         request.setVersion(version);
-        request.setFrontendPath(frontendPath);
         request.setControllerClass(controllerClass);
-        request.setBasePath(basePath);
 
         try {
             toolService.uploadTool(backend, frontend, request);

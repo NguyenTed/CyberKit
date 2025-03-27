@@ -36,7 +36,7 @@ public class ToolEntity {
     @Column(name = "controller_class")
     private String controllerClass;
 
-    @Column(name = "base_path")
-    private String basePath;
+    @Column(name = "plugin_id", unique = true)
+    private String pluginId;
 
 }
