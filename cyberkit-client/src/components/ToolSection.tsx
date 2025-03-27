@@ -4,7 +4,7 @@ import ToolCard from "./ToolCard";
 type Tool = {
   name: string;
   description: string;
-  icon?: React.ReactNode;
+  icon?: string;
 };
 
 type ToolSectionProps = {

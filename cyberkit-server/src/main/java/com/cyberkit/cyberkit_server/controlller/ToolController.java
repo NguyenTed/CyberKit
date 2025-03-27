@@ -58,13 +58,15 @@ public class ToolController {
             @RequestParam("frontend") MultipartFile frontend,
             @RequestParam("name") String name,
             @RequestParam("description") String description,
-            @RequestParam("version") String version
+            @RequestParam("version") String version,
+            @RequestParam("icon") String icon
     ) {
         log.info("ToolController.upload");
         ToolUploadRequest request = new ToolUploadRequest();
         request.setName(name);
         request.setDescription(description);
         request.setVersion(version);
+        request.setIcon(icon);
 
         try {
             toolService.uploadTool(backend, frontend, request);

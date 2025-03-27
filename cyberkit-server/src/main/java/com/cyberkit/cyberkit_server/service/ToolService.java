@@ -107,8 +107,6 @@ public class ToolService {
         PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
         ClassLoader classLoader = wrapper.getClassLoader();
 
-        String controllerClassNameTemp = "";
-
         // 4. Dynamically register plugin controller
         try {
             String controllerClassName = findControllerClassName(jarPath);
@@ -140,6 +138,7 @@ public class ToolService {
         tool.setBackendPath(jarPath.toString());
         tool.setFrontendPath("/plugins/" + pluginId + "/frontend/index.html");
         tool.setPluginId(pluginId);
+        tool.setIcon(request.getIcon());
 
         toolRepository.save(tool);
     }

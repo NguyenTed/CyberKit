@@ -35,7 +35,6 @@ public class DatabaseInitialize implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
-
     @Override
     public void run(String... args) throws Exception {
         System.out.println(">>> START INIT DATABASE");

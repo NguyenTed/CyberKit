@@ -22,9 +22,10 @@ public class ToolEntity {
 
     private String version;
     private String description;
-    @Column(name = "is_enabled")
+    private String icon;
+    @Column(name = "enabled")
     private boolean enabled;
-    @Column(name = "is_premium")
+    @Column(name = "premium")
     private boolean premium;
 
     @Column(nullable = false)
@@ -35,5 +36,4 @@ public class ToolEntity {
 
     @Column(name = "plugin_id", unique = true)
     private String pluginId;
-
 }

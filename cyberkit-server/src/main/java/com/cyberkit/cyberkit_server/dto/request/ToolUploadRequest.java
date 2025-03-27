@@ -13,6 +13,7 @@ public class ToolUploadRequest {
     private String name;
     private String description;
     private String version;
+    private String icon;
     private boolean isEnabled;
     private boolean isPremium;
 }

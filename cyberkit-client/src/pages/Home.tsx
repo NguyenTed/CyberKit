@@ -2,20 +2,19 @@ import { useState } from "react";
 
 import CategoryMenu from "../components/landing/CategoryMenu";
 import Hero from "../components/landing/Hero";
-import { FaRandom } from "react-icons/fa";
 import ToolSection from "../components/ToolSection";
 
 const tabs = [
-  { id: "crypto", label: "Crypto", icon: <FaRandom /> },
-  { id: "converter", label: "Converter", icon: <FaRandom /> },
-  { id: "web", label: "Web", icon: <FaRandom /> },
-  { id: "imageandvideo", label: "Images & Videos", icon: <FaRandom /> },
-  { id: "development", label: "Development", icon: <FaRandom /> },
-  { id: "network", label: "Network", icon: <FaRandom /> },
-  { id: "math", label: "Math", icon: <FaRandom /> },
-  { id: "measurement", label: "Measurement", icon: <FaRandom /> },
-  { id: "text", label: "Text", icon: <FaRandom /> },
-  { id: "data", label: "Data", icon: <FaRandom /> },
+  { id: "crypto", label: "Crypto", icon: "FaRandom" },
+  { id: "converter", label: "Converter", icon: "FaApplePay" },
+  { id: "web", label: "Web", icon: "FaRandom" },
+  { id: "imageandvideo", label: "Images & Videos", icon: "FaRandom" },
+  { id: "development", label: "Development", icon: "FaRandom" },
+  { id: "network", label: "Network", icon: "FaRandom" },
+  { id: "math", label: "Math", icon: "FaRandom" },
+  { id: "measurement", label: "Measurement", icon: "FaRandom" },
+  { id: "text", label: "Text", icon: "FaRandom" },
+  { id: "data", label: "Data", icon: "FaRandom" },
 ];
 
 const sections: { [key: string]: string } = {
@@ -35,36 +34,36 @@ const tools: {
   [key: string]: {
     name: string;
     description: string;
-    icon?: React.ReactNode;
+    icon?: string;
   }[];
 } = {
   crypto: [
     {
       name: "Hash Generator",
       description: "Generate secure hashes.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
     {
       name: "Bcrypt",
       description: "Create secure tokens.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
     {
       name: "Token Generator",
       description: "Create secure tokens.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
   ],
   converter: [
     {
       name: "Currency Converter",
       description: "Convert between currencies.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
     {
       name: "Currency Converter",
       description: "Convert between currencies.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
   ],
   web: [],
@@ -72,7 +71,7 @@ const tools: {
     {
       name: "Image Resizer",
       description: "Resize images easily.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
   ],
   development: [],
@@ -80,7 +79,7 @@ const tools: {
     {
       name: "IP Lookup",
       description: "Find details about an IP address.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
   ],
   math: [],
@@ -89,7 +88,7 @@ const tools: {
     {
       name: "Text Formatter",
       description: "Format text styles.",
-      icon: <FaRandom />,
+      icon: "FaRandom",
     },
   ],
   data: [],
