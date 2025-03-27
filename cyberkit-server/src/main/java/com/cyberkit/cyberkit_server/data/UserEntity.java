@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -18,5 +19,6 @@ public class UserEntity extends AbstractUserEntity {
     private String refreshToken;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<SubscriptionEntity> subscriptions;
+    private Date endDate;
 
 }

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios"
 import { getRefreshToken } from "./AuthApiService";
+import { notification } from "antd";
 
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL
@@ -8,18 +9,18 @@ const instance = axios.create({
 
 interface FailedRequest {
     resolve: (token: string) => void;
-    reject: (error: any) => void;
+    reject: (error: string) => void;
 }
 
 let failedQueue: FailedRequest[] = [];
 
 let isRefreshing = false;
-const processQueue = (error:any, token:string) => {
+const processQueue = (error:string, token:string) => {
   failedQueue.forEach((prom) => {
     if (error) {
-      prom.reject(error); // Trả về lỗi cho request bị fail
+      prom.reject(error); 
     } else {
-      prom.resolve(token); // Tiếp tục request với token mới
+      prom.resolve(token); 
     }
   });
   failedQueue = [];
@@ -57,17 +58,13 @@ const hasRefreshToken = (): boolean => {
 instance.interceptors.response.use(function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
-
-    console.log('response1: ', response)
     if(response&&response.data && response.data.data)
-        console.log("response2: "+ response.data);
         return response.data
     
     return response;
 }, async function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
-    console.log('error1: ', error)
     if(error.response && error.response.data){
         if(error.response.status == 401 && error.response.data.error.includes("Jwt expired")){
             const originalRequest = error.config;
@@ -79,14 +76,22 @@ instance.interceptors.response.use(function (response) {
                     if (res?.data) {
                         localStorage.setItem("access_token", res.data);
                         originalRequest.headers["Authorization"] = `Bearer ${res.data}`;
-                        processQueue(null, res.data);
+                        processQueue("", res.data);
                         return instance(originalRequest);
                     } else {
                         throw new Error("Refresh token API did not return data");
                     }
                 } catch (refreshError) {
                     console.error("Error refreshing token:", refreshError);
-                    processQueue(refreshError, "");
+                    processQueue("Error refreshing token:", "");
+                    localStorage.removeItem("access_token");
+                    alert("Access token has expired. Please log in again!");
+                    notification.error({
+                        message: "Your session has expired.",
+                        description: " Please log in again!",
+                        duration: 3,
+                    });
+                    window.location.href = "/login";
                     return Promise.reject(refreshError);
                 }
                 finally{

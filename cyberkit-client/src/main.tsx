@@ -11,10 +11,11 @@ import AdminPanel from "./features/admin/pages/AdminPanel.tsx";
 import NewToolPage from "./features/admin/pages/NewToolPage.tsx";
 import LoginPage from "./pages/Login.tsx";
 import SignupPage from "./pages/SignUp.tsx";
-import LoginSuccess from "./components/OauthCallback.tsx";
 import GitHubOAuthCallback from "./components/Oauth2GithubCallback.tsx";
 import PricingPage from "./pages/Pricing.tsx";
 import VnpayCallback from "./components/VNPayCallback.tsx";
+import ForbiddenPage from "./pages/Forbidden.tsx";
+import AdminRoute from "./features/admin/components/AdminRoute.tsx";
 
 const router = createBrowserRouter([
   {
@@ -30,12 +31,21 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
-        path: "/admin",
-        element: <AdminPanel />,
+        path: "/403",
+        element: <ForbiddenPage />,
       },
       {
-        path: "/admin/tools/new",
-        element: <NewToolPage />,
+        element: <AdminRoute />,
+        children: [
+          {
+            path: "/admin",
+            element: <AdminPanel />,
+          },
+          {
+            path: "/admin/tools/new",
+            element: <NewToolPage />,
+          },
+        ],
       },
       {
         path: "/pricing",
@@ -59,10 +69,6 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignupPage />,
-  },
-  {
-    path: "/oauth/callback",
-    element: <LoginSuccess />,
   },
 ]);
 

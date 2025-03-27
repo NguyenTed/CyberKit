@@ -41,8 +41,7 @@ public class SecurityConfig {
 //                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
                 .formLogin(f->f.disable())
                 .oauth2Login(oauth2 -> {
-                    oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                            .successHandler(oAuth2LoginSuccessHandler);
+                    oauth2.disable();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable());

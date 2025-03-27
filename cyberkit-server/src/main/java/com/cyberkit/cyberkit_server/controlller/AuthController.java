@@ -149,7 +149,7 @@ public class AuthController {
     }
 
     @PostMapping("logout")
-    public ResponseEntity logout(){
+    public ResponseEntity<RestResponse<String>> logout(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         accountService.updateRefreshToken(null,authentication.getName());
         ResponseCookie deleteSpringCookie=ResponseCookie
@@ -163,7 +163,7 @@ public class AuthController {
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
-                .body("Logout successfully");
+                .body(new RestResponse<>(200,"","","logout successfully"));
     }
     @GetMapping("/github-login")
     public ResponseEntity<RestResponse<String>> getGithubAthUrl(){

@@ -8,12 +8,11 @@ const GitHubOAuthCallback = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    
-
     if (code) {
       handleGitHubLogin(code);
     } else {
       console.error("GitHub login failed: No code received");
+      navigate('/login');
     }
   }, []);
 
@@ -27,11 +26,10 @@ const GitHubOAuthCallback = () => {
       }
       else{
         console.error("GitHub login unsuccessfully!",);
-        navigate('/login');
       }
-      
     } catch (error) {
       console.error("GitHub login error:", error);
+      navigate('/login');
     }
   };
 
