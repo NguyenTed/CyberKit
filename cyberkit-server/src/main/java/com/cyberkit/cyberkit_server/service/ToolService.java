@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +29,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import java.lang.reflect.Method;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -102,9 +107,11 @@ public class ToolService {
         PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
         ClassLoader classLoader = wrapper.getClassLoader();
 
+        String controllerClassNameTemp = "";
+
         // 4. Dynamically register plugin controller
         try {
-            String controllerClassName = request.getControllerClass();
+            String controllerClassName = findControllerClassName(jarPath);
             Class<?> controllerClass = classLoader.loadClass(controllerClassName);
             Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
 
@@ -132,7 +139,6 @@ public class ToolService {
         tool.setEnabled(false);
         tool.setBackendPath(jarPath.toString());
         tool.setFrontendPath("/plugins/" + pluginId + "/frontend/index.html");
-        tool.setControllerClass(request.getControllerClass());
         tool.setPluginId(pluginId);
 
         toolRepository.save(tool);
@@ -176,9 +182,11 @@ public class ToolService {
         PluginWrapper wrapper = pluginManager.reloadPlugin(pluginId, jarPath);
         ClassLoader classLoader = wrapper.getClassLoader();
 
+
         // 7. Register controller
-        String controllerClassName = tool.getControllerClass();  // e.g. com.cyberkit.texttobinary.TextAsciiToolController
+        String controllerClassName = findControllerClassName(jarPath);
         Class<?> controllerClass = classLoader.loadClass(controllerClassName);
+
 
         ConfigurableApplicationContext configCtx = (ConfigurableApplicationContext) context;
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) configCtx.getBeanFactory();
@@ -214,8 +222,10 @@ public class ToolService {
                 .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
         var pluginId = tool.getPluginId();
 
+        Path jarPath = Paths.get("tools", pluginId, "backend", pluginId + ".jar");
+
         // 2. Unregister controller
-        String controllerClassName = tool.getControllerClass();
+        String controllerClassName = findControllerClassName(jarPath);
         ClassLoader classLoader = pluginManager.getPlugin(pluginId).getClassLoader();
         Class<?> controllerClass = classLoader.loadClass(controllerClassName);
 
@@ -301,6 +311,37 @@ public class ToolService {
         }
 
         log.info("✅ Controller registered: {}", controllerClass.getName());
+    }
+
+    public String findControllerClassName(Path jarPath) throws Exception {
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarPath.toUri().toURL()}, null);
+             JarInputStream jarStream = new JarInputStream(Files.newInputStream(jarPath))) {
+
+            JarEntry entry;
+            while ((entry = jarStream.getNextJarEntry()) != null) {
+                if (entry.getName().endsWith(".class")) {
+                    String className = entry.getName()
+                            .replace("/", ".")
+                            .replace(".class", "");
+                    try {
+                        Class<?> cls = classLoader.loadClass(className);
+                        System.out.println("🔍 Inspecting class: " + className);
+
+                        for (Annotation annotation : cls.getAnnotations()) {
+                            String annotationName = annotation.annotationType().getName();
+                            if (annotationName.equals("org.springframework.web.bind.annotation.RestController") ||
+                                    annotationName.equals("org.springframework.stereotype.Controller")) {
+                                System.out.println("✅ Found controller: " + className);
+                                return className; // THIS LINE IS CRITICAL
+                            }
+                        }
+                    } catch (Throwable t) {
+                        System.err.println("⚠️ Failed to load class: " + className + ": " + t.getMessage());
+                    }
+                }
+            }
+        }
+        return null; // Only if no controller found
     }
 
     private String getApiEndpoint(String pluginId, String path) {

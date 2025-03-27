@@ -8,6 +8,7 @@ import {
   getToolsAPI,
   togglePremiumTool,
   toggleEnabledTool,
+  removeTool,
 } from "../../../services/toolService";
 
 const ToolTable: React.FC = () => {
@@ -96,11 +97,22 @@ const ToolTable: React.FC = () => {
 
   const confirmRemovePlugin = () => {
     if (selectedPlugin) {
-      setPlugins((prev) =>
-        prev.filter((plugin) => plugin.id !== selectedPlugin.id)
-      );
+      removeTool(selectedPlugin.id)
+        .then(() => {
+          setPlugins((prev) =>
+            prev.filter((plugin) => plugin.id !== selectedPlugin.id)
+          );
+        })
+        .catch((err) => {
+          console.error("Failed to toggle enabled:", err);
+          alert("Failed to update enabled status.");
+        })
+        .finally(() => {
+          closeModal();
+        });
+    } else {
+      closeModal();
     }
-    closeModal();
   };
 
   const openModal = (plugin: Tool, type: "premium" | "enable" | "remove") => {

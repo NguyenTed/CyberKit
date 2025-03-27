@@ -15,11 +15,17 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 @Component
 @Slf4j
@@ -47,7 +53,8 @@ public class PluginStartupLoader {
                 PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
                 ClassLoader classLoader = wrapper.getClassLoader();
 
-                String controllerClassName = tool.getControllerClass();
+                // 2. Unregister controller
+                String controllerClassName = findControllerClassName(jarPath);
                 Class<?> controllerClass = classLoader.loadClass(controllerClassName);
                 Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
 
@@ -144,5 +151,36 @@ public class PluginStartupLoader {
             }
         }
         return false;
+    }
+
+    public String findControllerClassName(Path jarPath) throws Exception {
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{jarPath.toUri().toURL()}, null);
+             JarInputStream jarStream = new JarInputStream(Files.newInputStream(jarPath))) {
+
+            JarEntry entry;
+            while ((entry = jarStream.getNextJarEntry()) != null) {
+                if (entry.getName().endsWith(".class")) {
+                    String className = entry.getName()
+                            .replace("/", ".")
+                            .replace(".class", "");
+                    try {
+                        Class<?> cls = classLoader.loadClass(className);
+                        System.out.println("🔍 Inspecting class: " + className);
+
+                        for (Annotation annotation : cls.getAnnotations()) {
+                            String annotationName = annotation.annotationType().getName();
+                            if (annotationName.equals("org.springframework.web.bind.annotation.RestController") ||
+                                    annotationName.equals("org.springframework.stereotype.Controller")) {
+                                System.out.println("✅ Found controller: " + className);
+                                return className; // THIS LINE IS CRITICAL
+                            }
+                        }
+                    } catch (Throwable t) {
+                        System.err.println("⚠️ Failed to load class: " + className + ": " + t.getMessage());
+                    }
+                }
+            }
+        }
+        return null; // Only if no controller found
     }
 }

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tool, getToolByIdAPI } from "../services/toolService";
 
+const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
+
 export default function ToolHost() {
   const { toolId } = useParams<{ toolId: string }>();
   const [tool, setTool] = useState<Tool | null>(null);
@@ -25,15 +27,20 @@ export default function ToolHost() {
 
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!tool) return <div className="p-6 text-gray-400">🔄 Loading tool...</div>;
-  const path: string = "http://localhost:8080/cyberkit" + tool.frontendPath;
-  // const path =
-  //   // "http://localhost:8080/cyberkit/plugins/bcrypttool/frontend/index.html";
-  console.log(path);
+  const path: string = baseUrl + tool.frontendPath;
+
+  console.log("pluginId: ", tool);
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">{tool.name}</h1>
-      <iframe src={path} width="100%" height="600" style={{ border: "none" }} />
+      <iframe
+        name={tool.pluginId}
+        src={path}
+        width="100%"
+        height="600"
+        style={{ border: "none" }}
+      />
     </div>
   );
 }

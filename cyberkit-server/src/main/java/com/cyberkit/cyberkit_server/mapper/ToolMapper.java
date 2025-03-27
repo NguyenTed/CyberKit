@@ -15,6 +15,7 @@ public interface ToolMapper {
     @Mapping(source = "enabled", target = "enabled")
     @Mapping(source = "premium", target = "premium")
     @Mapping(source = "frontendPath", target = "frontendPath")
+    @Mapping(source = "pluginId", target = "pluginId")
     ToolResponse toToolResponse(ToolEntity tool);
     ToolEntity toToolEntity(ToolUploadRequest request);
 }

@@ -33,9 +33,6 @@ public class ToolEntity {
     @Column(nullable = false)
     private String frontendPath;
 
-    @Column(name = "controller_class")
-    private String controllerClass;
-
     @Column(name = "plugin_id", unique = true)
     private String pluginId;
 

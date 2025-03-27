@@ -19,4 +19,5 @@ public class ToolResponse {
     private boolean enabled;
     private boolean premium;
     private String frontendPath;
+    private String pluginId;
 }

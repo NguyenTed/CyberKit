@@ -8,6 +8,7 @@ export type Tool = {
   frontendPath: string;
   enabled: boolean;
   premium: boolean;
+  pluginId: string;
 };
 
 const getToolsAPI = () => {
@@ -26,4 +27,14 @@ const toggleEnabledTool = (toolId: string) => {
   return axios.post<void>(`/api/v1/tools/toggleEnabled/${toolId}`);
 };
 
-export { getToolsAPI, getToolByIdAPI, togglePremiumTool, toggleEnabledTool };
+const removeTool = (toolId: string) => {
+  return axios.delete<void>(`/api/v1/tools/${toolId}`);
+};
+
+export {
+  getToolsAPI,
+  getToolByIdAPI,
+  togglePremiumTool,
+  toggleEnabledTool,
+  removeTool,
+};
