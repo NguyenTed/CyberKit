@@ -16,6 +16,14 @@ public class PluginManager {
         this.pluginDir = pluginDir;
     }
 
+    public PluginWrapper getPlugin(String pluginId) {
+        return plugins.get(pluginId);
+    }
+
+    public Collection<PluginWrapper> getAllPlugins() {
+        return plugins.values();
+    }
+
     public PluginWrapper loadPlugin(Path jarPath, String pluginId) throws Exception {
         if (plugins.containsKey(pluginId)) {
             throw new IllegalStateException("Plugin already loaded: " + pluginId);
@@ -29,10 +37,6 @@ public class PluginManager {
         return wrapper;
     }
 
-    public PluginWrapper getPlugin(String pluginId) {
-        return plugins.get(pluginId);
-    }
-
     public void unloadPlugin(String pluginId) {
         PluginWrapper wrapper = plugins.remove(pluginId);
         if (wrapper != null) {
@@ -44,8 +48,16 @@ public class PluginManager {
         }
     }
 
-    public Collection<PluginWrapper> getAllPlugins() {
-        return plugins.values();
+    public PluginWrapper reloadPlugin(String pluginId, Path newJarPath) throws Exception {
+        // Unload existing plugin if already loaded
+        unloadPlugin(pluginId);
+
+        // Load the updated plugin JAR
+        PluginClassLoader classLoader = new PluginClassLoader(newJarPath);
+        PluginWrapper wrapper = new PluginWrapper(pluginId, newJarPath, classLoader);
+
+        plugins.put(pluginId, wrapper);
+        return wrapper;
     }
 }
 

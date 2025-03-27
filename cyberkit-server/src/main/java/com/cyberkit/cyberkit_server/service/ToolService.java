@@ -8,9 +8,12 @@ import com.cyberkit.cyberkit_server.plugin.PluginWrapper;
 import com.cyberkit.cyberkit_server.repository.ToolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -45,6 +48,22 @@ public class ToolService {
     public List<ToolResponse> getAllTools() {
         var tools = toolRepository.findAll();
         return tools.stream().map(toolMapper::toToolResponse).toList();
+    }
+
+    public void togglePremiumTool(String id) {
+        var tool = toolRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new RuntimeException("Tool not found"));
+        var currentPremium = tool.isPremium();
+        tool.setPremium(!currentPremium);
+        toolRepository.save(tool);
+    }
+
+    public void toggleEnabledTool(String id) {
+        var tool = toolRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new RuntimeException("Tool not found"));
+        var currentEnabled = tool.isEnabled();
+        tool.setEnabled(!currentEnabled);
+        toolRepository.save(tool);
     }
 
     public void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception {
@@ -85,7 +104,7 @@ public class ToolService {
 
         // 4. Dynamically register plugin controller
         try {
-            String controllerClassName = "com.cyberkit.bcrypt.BcryptToolController";
+            String controllerClassName = request.getControllerClass();
             Class<?> controllerClass = classLoader.loadClass(controllerClassName);
             Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
 
@@ -117,6 +136,123 @@ public class ToolService {
         tool.setBasePath(request.getBasePath()); // optional, no longer prepended
 
         toolRepository.save(tool);
+    }
+
+    public void updateTool(MultipartFile newJar, MultipartFile newFrontendZip, String toolId) throws Exception {
+        var tool = toolRepository.findById(UUID.fromString(toolId)).orElseThrow(() -> new RuntimeException("Tool not found"));
+        var pluginId = tool.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        // 1. Paths
+        Path pluginRootDir = Paths.get("tools", pluginId);
+        Path backendDir = pluginRootDir.resolve("backend");
+        Path frontendDir = pluginRootDir.resolve("frontend");
+        Path jarPath = backendDir.resolve(pluginId + ".jar");
+
+        // 2. Unload plugin
+        pluginManager.unloadPlugin(pluginId);
+
+        // 3. Replace backend JAR
+        Files.createDirectories(backendDir);
+        Files.copy(newJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // 4. Replace frontend UI
+        FileUtils.deleteDirectory(frontendDir.toFile());
+        Files.createDirectories(frontendDir);
+        try (ZipInputStream zis = new ZipInputStream(newFrontendZip.getInputStream())) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                Path entryPath = frontendDir.resolve(entry.getName()).normalize();
+                if (!entryPath.startsWith(frontendDir)) throw new SecurityException("Bad zip entry: " + entry.getName());
+                if (entry.isDirectory()) {
+                    Files.createDirectories(entryPath);
+                } else {
+                    Files.createDirectories(entryPath.getParent());
+                    Files.copy(zis, entryPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+                zis.closeEntry();
+            }
+        }
+
+        // 5. Reload backend plugin
+        PluginWrapper wrapper = pluginManager.reloadPlugin(pluginId, jarPath);
+        ClassLoader classLoader = wrapper.getClassLoader();
+
+        // 7. Register controller
+        String controllerClassName = tool.getControllerClass();  // e.g. com.cyberkit.texttobinary.TextAsciiToolController
+        Class<?> controllerClass = classLoader.loadClass(controllerClassName);
+
+        ConfigurableApplicationContext configCtx = (ConfigurableApplicationContext) context;
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) configCtx.getBeanFactory();
+        RequestMappingHandlerMapping mapping = configCtx.getBean(RequestMappingHandlerMapping.class);
+
+        // Remove existing bean if exists
+        String beanName = "tool_" + toolId;
+        if (beanFactory.containsSingleton(beanName)) {
+            beanFactory.destroySingleton(beanName);
+        }
+
+        // Remove old mappings
+        List<HandlerMethod> toRemove = new ArrayList<>();
+        for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : mapping.getHandlerMethods().entrySet()) {
+            if (entry.getValue().getBeanType().getName().equals(controllerClass.getName())) {
+                toRemove.add(entry.getValue());
+                mapping.unregisterMapping(entry.getKey());
+            }
+        }
+
+        // Register new controller
+        Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
+        beanFactory.autowireBean(controllerInstance);
+        beanFactory.registerSingleton(beanName, controllerInstance);
+        registerPluginController(controllerInstance, controllerClass, tool.getBasePath());
+
+
+        System.out.println("✅ Plugin updated and reloaded: " + pluginId);
+    }
+
+    public void deleteTool(String toolId) throws Exception {
+        // 1. Get the plugin
+        ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
+                .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
+        var pluginId = tool.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+
+        // 2. Unregister controller
+        String controllerClassName = tool.getControllerClass();
+        ClassLoader classLoader = pluginManager.getPlugin(pluginId).getClassLoader();
+        Class<?> controllerClass = classLoader.loadClass(controllerClassName);
+
+        ConfigurableApplicationContext configCtx = (ConfigurableApplicationContext) context;
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) configCtx.getBeanFactory();
+        RequestMappingHandlerMapping mapping = configCtx.getBean(RequestMappingHandlerMapping.class);
+
+        // Remove mappings
+        List<RequestMappingInfo> toUnregister = new ArrayList<>();
+        for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : mapping.getHandlerMethods().entrySet()) {
+            if (entry.getValue().getBeanType().getName().equals(controllerClass.getName())) {
+                toUnregister.add(entry.getKey());
+            }
+        }
+        for (RequestMappingInfo info : toUnregister) {
+            mapping.unregisterMapping(info);
+            log.info("Unregistered: ", info.getName());
+        }
+
+        // Remove Spring bean
+        String beanName = "tool_" + pluginId;
+        if (beanFactory.containsSingleton(beanName)) {
+            beanFactory.destroySingleton(beanName);
+        }
+
+        // 3. Unload plugin
+        pluginManager.unloadPlugin(pluginId);
+
+        // 4. Delete files
+        Path pluginRootDir = Paths.get("tools", pluginId);
+        FileUtils.deleteDirectory(pluginRootDir.toFile());
+
+        // 5. Remove from DB
+        toolRepository.delete(tool);
+
+        System.out.println("🗑️ Plugin deleted successfully: " + pluginId);
     }
 
     private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String basePath) {

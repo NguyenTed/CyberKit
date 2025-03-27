@@ -1,87 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTimes, FaSortDown, FaSortUp } from "react-icons/fa";
 import Modal from "./Modal";
 import { createPortal } from "react-dom";
 import ToolControl from "./ToolControl";
-
-type Plugin = {
-  id: number;
-  name: string;
-  version: string;
-  description: string;
-  reportLink: string;
-  is_premium: boolean;
-  enabled: boolean;
-};
-
-const initialPlugins: Plugin[] = [
-  {
-    id: 1,
-    name: "Token generator",
-    version: "1.0.0",
-    description:
-      "Generate random string with the chars you want, uppercase or lowercase letters, numbers and/or symbols.",
-    reportLink: "#",
-    is_premium: true,
-    enabled: true,
-  },
-  {
-    id: 2,
-    name: "Hash text",
-    version: "1.0.0",
-    description:
-      "Hash a text string using the function you need : MD5, SHA1, SHA256, SHA224, SHA512, SHA384, SHA3 or RIPEMD160",
-    reportLink: "#",
-    is_premium: true,
-    enabled: false,
-  },
-  {
-    id: 3,
-    name: "Bcrypt",
-    version: "3.0.1",
-    description:
-      "Hash and compare text string using bcrypt. Bcrypt is a password-hashing function based on the Blowfish cipher.",
-    reportLink: "#",
-    is_premium: false,
-    enabled: true,
-  },
-  {
-    id: 4,
-    name: "Bcrypt",
-    version: "3.0.1",
-    description:
-      "Hash and compare text string using bcrypt. Bcrypt is a password-hashing function based on the Blowfish cipher.",
-    reportLink: "#",
-    is_premium: false,
-    enabled: true,
-  },
-  {
-    id: 5,
-    name: "Bcrypt",
-    version: "3.0.1",
-    description:
-      "Hash and compare text string using bcrypt. Bcrypt is a password-hashing function based on the Blowfish cipher.",
-    reportLink: "#",
-    is_premium: false,
-    enabled: true,
-  },
-];
+import {
+  Tool,
+  getToolsAPI,
+  togglePremiumTool,
+  toggleEnabledTool,
+} from "../../../services/toolService";
 
 const ToolTable: React.FC = () => {
-  const [plugins, setPlugins] = useState(initialPlugins);
+  const [plugins, setPlugins] = useState<Tool[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortAscending, setSortAscending] = useState(true);
-  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
+  const [sortAscending, setSortAscending] = useState(false);
+  const [selectedPlugin, setSelectedPlugin] = useState<Tool | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<
     "premium" | "enable" | "remove" | null
   >(null);
 
+  useEffect(() => {
+    getToolsAPI()
+      .then((res) => {
+        const sortedPlugins = [...res.data].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+        setPlugins(sortedPlugins);
+      })
+      .catch(() => {})
+      .finally(() => {});
+  }, []);
+
   const filteredPlugins = plugins.filter((plugin) =>
     plugin.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Toggle Sorting Order
   const toggleSort = () => {
     const sortedPlugins = [...plugins].sort((a, b) =>
       sortAscending
@@ -94,30 +48,50 @@ const ToolTable: React.FC = () => {
 
   const confirmTogglePremium = () => {
     if (selectedPlugin) {
-      setPlugins((prev) =>
-        prev.map((plugin) =>
-          plugin.id === selectedPlugin.id
-            ? { ...plugin, is_premium: !plugin.is_premium }
-            : plugin
-        )
-      );
+      togglePremiumTool(selectedPlugin.id)
+        .then(() => {
+          setPlugins((prev) =>
+            prev.map((plugin) =>
+              plugin.id === selectedPlugin.id
+                ? { ...plugin, premium: !plugin.premium }
+                : plugin
+            )
+          );
+        })
+        .catch((err) => {
+          console.error("Failed to toggle premium:", err);
+          alert("Failed to update premium status.");
+        })
+        .finally(() => {
+          closeModal();
+        });
+    } else {
+      closeModal();
     }
-
-    closeModal();
   };
 
   const confirmToggleEnable = () => {
     if (selectedPlugin) {
-      setPlugins((prev) =>
-        prev.map((plugin) =>
-          plugin.id === selectedPlugin.id
-            ? { ...plugin, enabled: !plugin.enabled }
-            : plugin
-        )
-      );
+      toggleEnabledTool(selectedPlugin.id)
+        .then(() => {
+          setPlugins((prev) =>
+            prev.map((plugin) =>
+              plugin.id === selectedPlugin.id
+                ? { ...plugin, enabled: !plugin.enabled }
+                : plugin
+            )
+          );
+        })
+        .catch((err) => {
+          console.error("Failed to toggle enabled:", err);
+          alert("Failed to update enabled status.");
+        })
+        .finally(() => {
+          closeModal();
+        });
+    } else {
+      closeModal();
     }
-
-    closeModal();
   };
 
   const confirmRemovePlugin = () => {
@@ -129,7 +103,7 @@ const ToolTable: React.FC = () => {
     closeModal();
   };
 
-  const openModal = (plugin: Plugin, type: "premium" | "enable" | "remove") => {
+  const openModal = (plugin: Tool, type: "premium" | "enable" | "remove") => {
     setSelectedPlugin(plugin);
     setModalType(type);
     setIsModalOpen(true);
@@ -142,7 +116,7 @@ const ToolTable: React.FC = () => {
   const togglePremiumModal = (
     <Modal
       message={`Are you sure you want to ${
-        selectedPlugin?.is_premium ? "downgrade" : "upgrade"
+        selectedPlugin?.premium ? "downgrade" : "upgrade"
       } ${selectedPlugin?.name} ?`}
       onSubmit={confirmTogglePremium}
       onCancel={closeModal}
@@ -215,7 +189,7 @@ const ToolTable: React.FC = () => {
                     <div className="flex flex-col">
                       <div className="flex items-center space-x-2">
                         <a
-                          href="#"
+                          href={`/tools/${plugin.id}`}
                           className="text-blue-600 font-medium hover:underline"
                         >
                           {plugin.name}
@@ -228,10 +202,10 @@ const ToolTable: React.FC = () => {
                         {plugin.description}
                       </p>
                       <a
-                        href={plugin.reportLink}
+                        href={`/tools/${plugin.id}`}
                         className="text-blue-500 text-sm hover:underline"
                       >
-                        Report an issue with this plugin
+                        Edit information of this tool
                       </a>
                     </div>
                   </td>
@@ -240,7 +214,7 @@ const ToolTable: React.FC = () => {
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={plugin.is_premium}
+                        checked={plugin.premium}
                         onChange={() => openModal(plugin, "premium")}
                         className="sr-only peer"
                       />

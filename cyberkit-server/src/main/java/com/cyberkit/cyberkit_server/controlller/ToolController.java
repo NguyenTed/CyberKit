@@ -6,6 +6,7 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,8 +22,12 @@ public class ToolController {
     @GetMapping
     public RestResponse<List<ToolResponse>> getAllTools() {
         log.info("ToolController.getAllTools");
+        var tools = toolService.getAllTools();
+        for (ToolResponse tool : tools) {
+            log.info(String.valueOf(tool.isPremium()));
+        }
         return RestResponse.<List<ToolResponse>>builder()
-                .data(toolService.getAllTools())
+                .data(tools)
                 .build();
     }
 
@@ -34,8 +39,22 @@ public class ToolController {
                 .build();
     }
 
+    @PostMapping("/togglePremium/{id}")
+    public RestResponse<Void> togglePremiumTool(@PathVariable String id) {
+        log.info("ToolController.togglePremiumTool");
+        toolService.togglePremiumTool(id);
+        return RestResponse.<Void>builder().message("Tool premium toggled").build();
+    }
+
+    @PostMapping("/toggleEnabled/{id}")
+    public RestResponse<Void> toggleEnabledTool(@PathVariable String id) {
+        log.info("ToolController.toggleEnabledTool");
+        toolService.toggleEnabledTool(id);
+        return RestResponse.<Void>builder().message("Tool ability toggled").build();
+    }
+
     @PostMapping
-    public RestResponse<String> upload(
+    public RestResponse<Void> upload(
             @RequestParam("backend") MultipartFile backend,
             @RequestParam("frontend") MultipartFile frontend,
             @RequestParam("name") String name,
@@ -56,14 +75,55 @@ public class ToolController {
 
         try {
             toolService.uploadTool(backend, frontend, request);
-            return RestResponse.<String>builder()
-                    .data("Upload successfully")
+            return RestResponse.<Void>builder()
+                    .statusCode(200)
+                    .message("Upload successfully")
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
-            return RestResponse.<String>builder()
+            return RestResponse.<Void>builder()
                     .statusCode(500)
                     .error("Upload failed" + e.getMessage())
+                    .build();
+        }
+    }
+
+    @PutMapping("/updateTool/{toolId}")
+    public RestResponse<Void> updateTool(
+            @RequestParam("backend") MultipartFile backend,
+            @RequestParam("frontend") MultipartFile frontend,
+            @PathVariable("toolId") String toolId
+    ) {
+        log.info("ToolController.updateTool");
+        try {
+            toolService.updateTool(backend, frontend, toolId);
+            return RestResponse.<Void>builder()
+                    .statusCode(200)
+                    .message("Update tool successfully")
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.<Void>builder()
+                    .statusCode(500)
+                    .error("Fail to update tool: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @DeleteMapping("/{toolId}")
+    public RestResponse<Void> deleteTool(@PathVariable String toolId) {
+        log.info("ToolController.deleteTool");
+        try {
+            toolService.deleteTool(toolId);
+            return RestResponse.<Void>builder()
+                    .statusCode(200)
+                    .message("Delete tool successfully")
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResponse.<Void>builder()
+                    .statusCode(500)
+                    .error("Fail to delete tool: " + e.getMessage())
                     .build();
         }
     }

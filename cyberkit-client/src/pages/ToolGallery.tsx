@@ -10,7 +10,7 @@ export default function ToolGallery() {
   useEffect(() => {
     getToolsAPI()
       .then((res) => {
-        setTools(res.data); // ✅ this is the array directly
+        setTools(res.data.data); // ✅ this is the array directly
       })
       .catch(() => setError("Failed to fetch tools"))
       .finally(() => setLoading(false));
@@ -29,10 +29,9 @@ export default function ToolGallery() {
       <h1 className="text-3xl font-bold mb-6">🧰 Developer Tools</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tools.map((tool) => {
-          const toolId = tool.frontendPath.split("/")[2]; // e.g. /plugins/bcrypt/frontend/index.js → "bcrypt"
           return (
             <Link
-              to={`/tools/${toolId}`}
+              to={`/tools/${tool.id}`}
               key={tool.name}
               className="p-4 rounded-xl shadow bg-gray-900 hover:bg-gray-800 transition"
             >
