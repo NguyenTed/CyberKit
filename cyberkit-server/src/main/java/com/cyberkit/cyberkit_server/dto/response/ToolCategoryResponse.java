@@ -1,4 +1,4 @@
-package com.cyberkit.cyberkit_server.dto.request;
+package com.cyberkit.cyberkit_server.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ToolUploadRequest {
+public class ToolCategoryResponse {
+    private UUID id;
     private String name;
-    private String description;
-    private String version;
     private String icon;
-    private boolean isEnabled;
-    private boolean isPremium;
-    private UUID categoryId;
 }

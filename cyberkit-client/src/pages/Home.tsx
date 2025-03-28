@@ -5,16 +5,16 @@ import Hero from "../components/landing/Hero";
 import ToolSection from "../components/ToolSection";
 
 const tabs = [
-  { id: "crypto", label: "Crypto", icon: "FaRandom" },
-  { id: "converter", label: "Converter", icon: "FaApplePay" },
-  { id: "web", label: "Web", icon: "FaRandom" },
-  { id: "imageandvideo", label: "Images & Videos", icon: "FaRandom" },
-  { id: "development", label: "Development", icon: "FaRandom" },
-  { id: "network", label: "Network", icon: "FaRandom" },
-  { id: "math", label: "Math", icon: "FaRandom" },
-  { id: "measurement", label: "Measurement", icon: "FaRandom" },
-  { id: "text", label: "Text", icon: "FaRandom" },
-  { id: "data", label: "Data", icon: "FaRandom" },
+  { id: "crypto", label: "Crypto", icon: "SiCryptpad" },
+  { id: "converter", label: "Converter", icon: "SiConvertio" },
+  { id: "web", label: "Web", icon: "CgBrowser" },
+  { id: "imageandvideo", label: "Images & Videos", icon: "FaImage" },
+  { id: "development", label: "Development", icon: "FaLaptopCode" },
+  { id: "network", label: "Network", icon: "FaNetworkWired" },
+  { id: "math", label: "Math", icon: "BiMath" },
+  { id: "measurement", label: "Measurement", icon: "FaRulerCombined" },
+  { id: "text", label: "Text", icon: "IoText" },
+  { id: "data", label: "Data", icon: "FaDatabase" },
 ];
 
 const sections: { [key: string]: string } = {

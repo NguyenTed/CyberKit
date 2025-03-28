@@ -36,4 +36,8 @@ public class ToolEntity {
 
     @Column(name = "plugin_id", unique = true)
     private String pluginId;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private ToolCategoryEntity category;
 }

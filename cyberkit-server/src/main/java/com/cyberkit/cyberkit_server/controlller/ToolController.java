@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -59,7 +60,8 @@ public class ToolController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("version") String version,
-            @RequestParam("icon") String icon
+            @RequestParam("icon") String icon,
+            @RequestParam("categoryId") UUID categoryId
     ) {
         log.info("ToolController.upload");
         ToolUploadRequest request = new ToolUploadRequest();
@@ -67,6 +69,7 @@ public class ToolController {
         request.setDescription(description);
         request.setVersion(version);
         request.setIcon(icon);
+        request.setCategoryId(categoryId);
 
         try {
             toolService.uploadTool(backend, frontend, request);

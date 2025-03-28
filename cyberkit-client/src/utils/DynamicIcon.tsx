@@ -4,6 +4,9 @@ import * as AiIcons from "react-icons/ai";
 import * as BiIcons from "react-icons/bi";
 import * as HiIcons from "react-icons/hi";
 import * as IoIcons from "react-icons/io5";
+import * as SiIcons from "react-icons/si";
+import * as CgIcons from "react-icons/cg";
+import * as LuIcons from "react-icons/lu";
 
 type IconPack =
   | typeof FaIcons
@@ -11,7 +14,10 @@ type IconPack =
   | typeof AiIcons
   | typeof BiIcons
   | typeof HiIcons
-  | typeof IoIcons;
+  | typeof IoIcons
+  | typeof SiIcons
+  | typeof CgIcons
+  | typeof LuIcons;
 
 const iconPacks: Record<string, IconPack> = {
   fa: FaIcons,
@@ -20,6 +26,9 @@ const iconPacks: Record<string, IconPack> = {
   bi: BiIcons,
   hi: HiIcons,
   io: IoIcons,
+  si: SiIcons,
+  cg: CgIcons,
+  lu: LuIcons,
 };
 
 interface DynamicIconProps {

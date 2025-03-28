@@ -5,6 +5,7 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.mapper.ToolMapper;
 import com.cyberkit.cyberkit_server.plugin.PluginManager;
 import com.cyberkit.cyberkit_server.plugin.PluginWrapper;
+import com.cyberkit.cyberkit_server.repository.ToolCategoryRepository;
 import com.cyberkit.cyberkit_server.repository.ToolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class ToolService {
 
     private final ApplicationContext context;
     private final ToolRepository toolRepository;
+    private final ToolCategoryRepository toolCategoryRepository;
     private final PluginManager pluginManager;
     private final ToolMapper toolMapper;
 
@@ -139,6 +141,7 @@ public class ToolService {
         tool.setFrontendPath("/plugins/" + pluginId + "/frontend/index.html");
         tool.setPluginId(pluginId);
         tool.setIcon(request.getIcon());
+        tool.setCategory(toolCategoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Tool category not found")));
 
         toolRepository.save(tool);
     }
