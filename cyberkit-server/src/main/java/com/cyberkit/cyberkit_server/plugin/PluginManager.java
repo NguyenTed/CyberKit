@@ -1,5 +1,6 @@
 package com.cyberkit.cyberkit_server.plugin;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
+@Getter
 public class PluginManager {
     private final Path pluginDir;
     private final Map<String, PluginWrapper> plugins = new ConcurrentHashMap<>();
@@ -41,22 +43,32 @@ public class PluginManager {
         PluginWrapper wrapper = plugins.remove(pluginId);
         if (wrapper != null) {
             try {
-                wrapper.getClassLoader().close();
+                wrapper.getClassLoader().close(); // Unload classes
+                log.info("Plugin unloaded: {}", pluginId);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            log.warn("Plugin not found to unload: {}", pluginId);
         }
     }
 
+
     public PluginWrapper reloadPlugin(String pluginId, Path newJarPath) throws Exception {
-        // Unload existing plugin if already loaded
+        // Ensure plugin is unloaded first
         unloadPlugin(pluginId);
 
-        // Load the updated plugin JAR
+        // Defensive check (optional)
+        if (plugins.containsKey(pluginId)) {
+            throw new IllegalStateException("Plugin still exists after unload: " + pluginId);
+        }
+
+        // Load the updated plugin JAR with isolated classloader
         PluginClassLoader classLoader = new PluginClassLoader(newJarPath);
         PluginWrapper wrapper = new PluginWrapper(pluginId, newJarPath, classLoader);
 
         plugins.put(pluginId, wrapper);
+        log.info("Reloaded plugin: {}", pluginId);
         return wrapper;
     }
 }

@@ -9,7 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -78,7 +81,6 @@ public class ToolController {
                     .message("Upload successfully")
                     .build();
         } catch (Exception e) {
-            e.printStackTrace();
             return RestResponse.<Void>builder()
                     .statusCode(500)
                     .error("Upload failed" + e.getMessage())
@@ -86,21 +88,26 @@ public class ToolController {
         }
     }
 
-    @PutMapping("/updateTool/{toolId}")
+    @PostMapping("/execute/{toolId}/{action}")
+    public Object executeTool(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        return toolService.executeTool(toolId, action, body);
+    }
+
+    @PutMapping("/update/{toolId}")
     public RestResponse<Void> updateTool(
+            @PathVariable("toolId") String toolId,
             @RequestParam("backend") MultipartFile backend,
             @RequestParam("frontend") MultipartFile frontend,
-            @PathVariable("toolId") String toolId
+            @RequestParam("version") String version
     ) {
         log.info("ToolController.updateTool");
         try {
-            toolService.updateTool(backend, frontend, toolId);
+            toolService.updateTool(toolId, backend, frontend, version);
             return RestResponse.<Void>builder()
                     .statusCode(200)
                     .message("Update tool successfully")
                     .build();
         } catch (Exception e) {
-            e.printStackTrace();
             return RestResponse.<Void>builder()
                     .statusCode(500)
                     .error("Fail to update tool: " + e.getMessage())
@@ -118,7 +125,6 @@ public class ToolController {
                     .message("Delete tool successfully")
                     .build();
         } catch (Exception e) {
-            e.printStackTrace();
             return RestResponse.<Void>builder()
                     .statusCode(500)
                     .error("Fail to delete tool: " + e.getMessage())

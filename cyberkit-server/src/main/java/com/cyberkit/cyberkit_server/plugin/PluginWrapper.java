@@ -1,7 +1,8 @@
 package com.cyberkit.cyberkit_server.plugin;
-
+import lombok.Getter;
 import java.nio.file.Path;
 
+@Getter
 public class PluginWrapper {
     private final String id;
     private final Path jarPath;
@@ -11,18 +12,6 @@ public class PluginWrapper {
         this.id = id;
         this.jarPath = jarPath;
         this.classLoader = classLoader;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public Path getJarPath() {
-        return jarPath;
-    }
-
-    public PluginClassLoader getClassLoader() {
-        return classLoader;
     }
 }
 

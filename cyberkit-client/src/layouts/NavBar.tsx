@@ -22,32 +22,37 @@ const categories = [
   "Data",
 ];
 
-
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const {userInfo,setUserInfo,setIsAuthenticated,  isAppLoading, setIsAppLoading}= useCurrentApp();
+  const {
+    userInfo,
+    setUserInfo,
+    setIsAuthenticated,
+    isAppLoading,
+    setIsAppLoading,
+  } = useCurrentApp();
 
   // Solve the refresh page
   useEffect(() => {
     const fetchAccount = async () => {
-        try {
-            const res = await getDelayAccountAPI();
-            console.log(res.data)
-            if (res.data) {
-                setUserInfo(res.data);
-                setIsAuthenticated(true);
-            }
-        } catch (error) {
-            console.error("Error fetching account:", error);
-        } finally {
-            setIsAppLoading(false); 
+      try {
+        const res = await getDelayAccountAPI();
+        console.log(res.data);
+        if (res.data) {
+          setUserInfo(res.data);
+          setIsAuthenticated(true);
         }
+      } catch (error) {
+        console.error("Error fetching account:", error);
+      } finally {
+        setIsAppLoading(false);
+      }
     };
     fetchAccount();
-}, []);
+  }, []);
 
   const openDropdown = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -59,33 +64,31 @@ const NavBar: React.FC = () => {
       setDropdownOpen(false);
     }, 200); // Small delay to allow moving to the dropdown
   };
-  
+
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
   const handleLogout = async () => {
-    const  res= await logoutAPI();
+    const res = await logoutAPI();
     console.log("logout res: ", res);
-    if(res.data){
+    if (res.data) {
       setIsAuthenticated(false);
       setUserInfo(null);
       localStorage.removeItem("access_token");
 
       navigate("/");
-    }
-    else{
+    } else {
       notification.error({
-          message: "Error logout user",
-          description: "Logout failed!",
+        message: "Error logout user",
+        description: "Logout failed!",
       });
     }
-  }
-
+  };
 
   return (
     <>
-      { isAppLoading === false  ?
+      {isAppLoading === false ? (
         <div>
           <nav className="w-full h-16 fixed top-0 bg-white shadow-md px-6 py-2 z-40">
             <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
@@ -97,7 +100,10 @@ const NavBar: React.FC = () => {
                   onClick={() => navigate("/")}
                 />
 
-                <a href="#" className="text-gray-700 hover:text-blue-600 font-medium">
+                <a
+                  href="#"
+                  className="text-gray-700 hover:text-blue-600 font-medium"
+                >
                   About Us
                 </a>
                 {/* Category Dropdown */}
@@ -106,7 +112,7 @@ const NavBar: React.FC = () => {
                   onMouseEnter={openDropdown}
                   onMouseLeave={closeDropdown}
                 >
-                  <button className="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
+                  <button className="text-gray-700 hover:text-blue-600 font-medium focus:outline-none cursor-pointer">
                     Category
                   </button>
 
@@ -131,7 +137,10 @@ const NavBar: React.FC = () => {
                 </div>
 
                 {!userInfo?.premium && (
-                  <a href="/pricing" className="text-gray-700 hover:text-blue-600 font-medium">
+                  <a
+                    href="/pricing"
+                    className="text-gray-700 hover:text-blue-600 font-medium"
+                  >
                     Pricing
                   </a>
                 )}
@@ -140,39 +149,38 @@ const NavBar: React.FC = () => {
               {/* Right Side */}
               <div className="flex space-x-4">
                 {userInfo ? (
-                  
-                  <div className="flex items-center space-x-2 hover:text-blue-600" onClick={toggleMenu}>
+                  <div
+                    className="flex items-center space-x-2 hover:text-blue-600"
+                    onClick={toggleMenu}
+                  >
                     {userInfo.premium && (
-                      <span 
-                        className="ml-1 text-yellow-500 relative cursor-pointer" 
+                      <span
+                        className="ml-1 text-yellow-500 relative cursor-pointer"
                         title="PREMIUM"
                       >
                         <CrownTwoTone />
                       </span>
                     )}
-                    <img 
-                      src={defaultAvatar} 
-                      alt="User Avatar" 
+                    <img
+                      src={defaultAvatar}
+                      alt="User Avatar"
                       className="w-8 h-8 rounded-full"
                     />
-                    <span className="text-gray-800 font-medium">{userInfo.name}</span>
-                    {menuOpen && (
-                      <UserMenu handleLogout={handleLogout} />
-                    )}
+                    <span className="text-gray-800 font-medium">
+                      {userInfo.name}
+                    </span>
+                    {menuOpen && <UserMenu handleLogout={handleLogout} />}
                   </div>
-                  
-                  
                 ) : (
-                  
                   <>
-                    <button 
-                      className="px-4 py-2 text-blue-600 font-medium hover:text-blue-800" 
+                    <button
+                      className="px-4 py-2 text-blue-600 font-medium hover:text-blue-800 cursor-pointer"
                       onClick={() => navigate("/login")}
                     >
                       Log In
                     </button>
-                    <button 
-                      className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition" 
+                    <button
+                      className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer"
                       onClick={() => navigate("/signup")}
                     >
                       Sign Up
@@ -182,15 +190,14 @@ const NavBar: React.FC = () => {
               </div>
             </div>
           </nav>
-          <Outlet/>
+          <Outlet />
         </div>
-        :
+      ) : (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <ClipLoader size={50}/>
+          <ClipLoader size={50} />
         </div>
-      }
+      )}
     </>
-    
   );
 };
 

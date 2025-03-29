@@ -8,7 +8,7 @@ public class PluginManagerConfig {
 
     @Bean
     public PluginConfig pluginConfig() {
-        return new PluginConfig("tools"); // or wherever your plugins are stored
+        return new PluginConfig("tools"); // where plugins are stored
     }
 
     @Bean
