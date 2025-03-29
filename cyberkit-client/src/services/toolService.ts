@@ -9,6 +9,7 @@ export type Tool = {
   enabled: boolean;
   premium: boolean;
   pluginId: string;
+  icon: string;
 };
 
 const getToolsAPI = () => {

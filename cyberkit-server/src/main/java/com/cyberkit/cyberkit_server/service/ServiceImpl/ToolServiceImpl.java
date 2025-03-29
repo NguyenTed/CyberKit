@@ -158,7 +158,7 @@ public class ToolServiceImpl implements ToolService {
         PluginService pluginService = (PluginService) serviceInstance;
 
         // 6. Call the method (example for hash)
-        Map<String, Object> result = pluginService.execute(action,input);
+        Map<String, Object> result = pluginService.execute(action, input);
         log.info("Result of plugin: {}", result);
 
         return result;

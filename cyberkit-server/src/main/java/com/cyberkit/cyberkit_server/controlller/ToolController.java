@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -88,8 +89,14 @@ public class ToolController {
         }
     }
 
+    @GetMapping("/execute/{toolId}/{action}")
+    public Map<String, Object> executeToolGETMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        return toolService.executeTool(toolId, action, new HashMap<>());
+    }
+
+
     @PostMapping("/execute/{toolId}/{action}")
-    public Object executeTool(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public Map<String, Object> executeToolPOSTMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         return toolService.executeTool(toolId, action, body);
     }
 
