@@ -157,7 +157,7 @@ const NavBar: React.FC = () => {
                     />
                     <span className="text-gray-800 font-medium">{userInfo.name}</span>
                     {menuOpen && (
-                      <UserMenu handleLogout={handleLogout} />
+                      <UserMenu handleLogout={handleLogout} userInfo={ userInfo} />
                     )}
                   </div>
                   

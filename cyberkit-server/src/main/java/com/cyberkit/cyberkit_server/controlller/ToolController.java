@@ -6,10 +6,12 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -121,5 +123,10 @@ public class ToolController {
                     .error("Fail to delete tool: " + e.getMessage())
                     .build();
         }
+    }
+
+    @PostMapping("/{tool}/{method}")
+    public ResponseEntity<RestResponse> handleTool(@PathVariable String tool, @PathVariable String method, @RequestBody Map<String, Object> data){
+        return null;
     }
 }

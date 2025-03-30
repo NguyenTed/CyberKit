@@ -47,6 +47,7 @@ public class GlobalException {
         res.setError(exception.getMessage());
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setMessage(exception.getMessage());
+        res.setData("");
         return ResponseEntity.badRequest().body(res);
     }
 

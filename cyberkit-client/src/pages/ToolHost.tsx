@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
 import { Tool, getToolByIdAPI } from "../services/toolService";
+import NavBar from "../layouts/NavBar";
 
 export default function ToolHost() {
   const { toolId } = useParams<{ toolId: string }>();
@@ -31,9 +33,23 @@ export default function ToolHost() {
   console.log(path);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">{tool.name}</h1>
-      <iframe src={path} width="100%" height="600" style={{ border: "none" }} />
+    <>
+    <NavBar />
+    <div className="max-w-5xl mx-auto p-6 min-h-screen pt-17 overflow-hidden">
+      <div className="relative p-10 bg-gray-100">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">{tool.name}</h1>
+      <div className="bg-white text-xl p-6 rounded-lg shadow-md">
+        <h3>{tool.description}</h3>
+      </div>
+      <iframe
+        src={path}
+        className="w-full h-[600px] mt-6 rounded-lg shadow-md border-0"
+      />
+      </div>
+      
+      
     </div>
+  </>
+    
   );
 }
