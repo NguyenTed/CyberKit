@@ -68,7 +68,7 @@ public class ToolController {
             @RequestParam("description") String description,
             @RequestParam("version") String version,
             @RequestParam("icon") String icon,
-            @RequestParam("categoryId") UUID categoryId
+            @RequestParam("category") UUID categoryId
     ) {
         log.info("ToolController.upload");
         ToolUploadRequest request = new ToolUploadRequest();
@@ -106,13 +106,24 @@ public class ToolController {
     @PutMapping("/update/{toolId}")
     public RestResponse<Void> updateTool(
             @PathVariable("toolId") String toolId,
-            @RequestParam("backend") MultipartFile backend,
-            @RequestParam("frontend") MultipartFile frontend,
-            @RequestParam("version") String version
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("icon") String icon,
+            @RequestParam("category") String categoryId,
+            @RequestParam("version") String version,
+            @RequestParam(value = "backend", required = false) MultipartFile backend,
+            @RequestParam(value = "frontend", required = false) MultipartFile frontend
     ) {
         log.info("ToolController.updateTool");
+        ToolUploadRequest request = new ToolUploadRequest();
+        request.setName(name);
+        request.setDescription(description);
+        request.setVersion(version);
+        request.setIcon(icon);
+        request.setCategoryId(UUID.fromString(categoryId));
+
         try {
-            toolService.updateTool(toolId, backend, frontend, version);
+            toolService.updateTool(toolId, request, backend, frontend);
             return RestResponse.<Void>builder()
                     .statusCode(200)
                     .message("Update tool successfully")

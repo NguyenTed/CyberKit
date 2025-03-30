@@ -20,5 +20,6 @@ public class ToolResponse {
     private boolean enabled;
     private boolean premium;
     private String frontendPath;
-    private String pluginId;
+    private String categoryId;
+    private String categoryName;
 }

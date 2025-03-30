@@ -15,6 +15,8 @@ public interface ToolMapper {
     @Mapping(source = "enabled", target = "enabled")
     @Mapping(source = "premium", target = "premium")
     @Mapping(source = "frontendPath", target = "frontendPath")
+    @Mapping(source = "category.id", target = "categoryId")
+    @Mapping(source = "category.name", target = "categoryName")
     ToolResponse toToolResponse(ToolEntity tool);
     ToolEntity toToolEntity(ToolUploadRequest request);
 }

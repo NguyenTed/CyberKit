@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Tool, getToolByIdAPI } from "../services/toolService";
+import { Tool, getToolByIdAPI, executeTool } from "../services/toolService";
 import { toast, Toaster } from "sonner";
 
 const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
-const token = localStorage.getItem("access_token");
 
 window.addEventListener("message", async (event) => {
   if (event.data.type === "copyToClipboard") {
@@ -25,19 +24,14 @@ window.addEventListener("message", async (event) => {
     const { endpoint, method, body, toolId } = payload;
 
     try {
-      const res = await fetch(
-        `${baseUrl}/api/v1/tools/execute/${toolId}${endpoint || "/nothing"}`,
-        {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        }
+      const result = await executeTool(
+        method,
+        toolId,
+        endpoint,
+        JSON.stringify(body)
       );
 
-      const json = await res.json();
+      const json = result.data;
 
       const response = {
         type: "toolApiResponse",
@@ -90,9 +84,6 @@ export default function ToolHost() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  console.log("Token la: ");
-  console.log(token);
-
   useEffect(() => {
     if (!toolId) return;
 
@@ -110,8 +101,6 @@ export default function ToolHost() {
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!tool) return <div className="p-6 text-gray-400">🔄 Loading tool...</div>;
   const path: string = baseUrl + tool.frontendPath;
-
-  console.log("pluginId: ", tool);
 
   return (
     <>

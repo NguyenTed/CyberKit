@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaTimes, FaSortDown, FaSortUp } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import Modal from "./Modal";
 import { createPortal } from "react-dom";
 import ToolControl from "./ToolControl";
@@ -13,6 +14,7 @@ import {
 
 const ToolTable: React.FC = () => {
   const [plugins, setPlugins] = useState<Tool[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortAscending, setSortAscending] = useState(false);
   const [selectedPlugin, setSelectedPlugin] = useState<Tool | null>(null);
@@ -33,8 +35,10 @@ const ToolTable: React.FC = () => {
       .finally(() => {});
   }, []);
 
-  const filteredPlugins = plugins.filter((plugin) =>
-    plugin.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPlugins = plugins.filter(
+    (plugin) =>
+      plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory ? plugin.categoryName === selectedCategory : true)
   );
 
   const toggleSort = () => {
@@ -209,16 +213,29 @@ const ToolTable: React.FC = () => {
                         <span className="text-gray-500 text-sm">
                           {plugin.version}
                         </span>
+
+                        {plugin.categoryName && (
+                          <button
+                            onClick={() =>
+                              setSelectedCategory(plugin.categoryName!)
+                            }
+                            className="ml-3 inline-flex items-center text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 hover:text-black px-2.5 py-0.5 rounded-full transition"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></span>
+                            {plugin.categoryName}
+                          </button>
+                        )}
                       </div>
                       <p className="text-gray-600 text-sm">
                         {plugin.description}
                       </p>
-                      <a
-                        href={`/tools/${plugin.id}`}
+                      <Link
+                        to={`/admin/tools/update/${plugin.id}`}
+                        state={{ plugin }}
                         className="text-blue-500 text-sm hover:underline"
                       >
-                        Edit information of this tool
-                      </a>
+                        Update this tool
+                      </Link>
                     </div>
                   </td>
                   {/* Upgrade/Degrade Toggle */}

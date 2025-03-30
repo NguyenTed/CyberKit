@@ -16,6 +16,6 @@ public interface ToolService {
 
     void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception;
     Map<String, Object> executeTool (String toolId, String action, Map<String, Object> input) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
-    void updateTool(String toolId, MultipartFile newJar, MultipartFile newFrontendZip, String version) throws Exception;
+    void updateTool(String toolId, ToolUploadRequest request, MultipartFile newJar, MultipartFile newFrontendZip) throws Exception;
     void deleteTool(String toolId) throws IOException;
 }

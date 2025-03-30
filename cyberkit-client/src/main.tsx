@@ -9,6 +9,7 @@ import NavBar from "./layouts/NavBar.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import AdminPanel from "./features/admin/pages/AdminPanel.tsx";
 import NewToolPage from "./features/admin/pages/NewToolPage.tsx";
+import UpdateToolPage from "./features/admin/pages/UpdateToolPage.tsx";
 import LoginPage from "./pages/Login.tsx";
 import SignupPage from "./pages/SignUp.tsx";
 import GitHubOAuthCallback from "./components/Oauth2GithubCallback.tsx";
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
           {
             path: "/admin/tools/new",
             element: <NewToolPage />,
+          },
+          {
+            path: "/admin/tools/update/:id",
+            element: <UpdateToolPage />,
           },
         ],
       },

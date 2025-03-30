@@ -166,42 +166,50 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public void updateTool(String toolId, MultipartFile newJar, MultipartFile newFrontendZip, String version) throws Exception {
+    public void updateTool(String toolId, ToolUploadRequest request, MultipartFile newJar, MultipartFile newFrontendZip) throws Exception {
         ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
                 .orElseThrow(() -> new RuntimeException("Tool not found"));
+
+        tool.setName(request.getName());
+        tool.setDescription(request.getDescription());
+        tool.setVersion(request.getVersion());
+        tool.setIcon(request.getIcon());
+        tool.setCategory(toolCategoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Tool category not found")));
+        toolRepository.save(tool);
+        log.info("✅ Plugin information updated: {}", tool.getName());
 
         Path pluginRootDir = Paths.get("tools", toolId);
         Path backendDir = pluginRootDir.resolve("backend");
         Path frontendDir = pluginRootDir.resolve("frontend");
         Path jarPath = backendDir.resolve(toolId + ".jar");
 
-        // 🔌 Unload if loaded
-        if (pluginManager.getPlugin(toolId) != null) {
-            pluginManager.unloadPlugin(toolId);
+        if (newFrontendZip != null && !newFrontendZip.isEmpty()) {
+            // ♻️ Replace frontend
+            FileUtils.deleteDirectory(frontendDir.toFile());
+            extractFrontendZip(newFrontendZip, frontendDir);
         }
 
-        // ♻️ Replace backend
-        Files.createDirectories(backendDir);
-        Files.copy(newJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
+        if (newJar != null && !newJar.isEmpty()) {
+            // 🔌 Unload if loaded
+            if (pluginManager.getPlugin(toolId) != null) {
+                pluginManager.unloadPlugin(toolId);
+            }
 
-        // ♻️ Replace frontend
-        FileUtils.deleteDirectory(frontendDir.toFile());
-        extractFrontendZip(newFrontendZip, frontendDir);
+            // ♻️ Replace backend
+            Files.createDirectories(backendDir);
+            Files.copy(newJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
 
-        log.info("✅ Currently loaded plugins: {}", pluginManager.getAllPlugins().stream()
-                .map(PluginWrapper::getId)
-                .toList());
+            log.info("✅ Currently loaded plugins: {}", pluginManager.getAllPlugins().stream()
+                    .map(PluginWrapper::getId)
+                    .toList());
 
+            // 5. Reload backend plugin
+            PluginWrapper wrapper = pluginManager.reloadPlugin(toolId, jarPath);
+            ClassLoader classLoader = wrapper.getClassLoader();
 
-        // 5. Reload backend plugin
-        PluginWrapper wrapper = pluginManager.reloadPlugin(toolId, jarPath);
-        ClassLoader classLoader = wrapper.getClassLoader();
-
-        loadAndRegisterPluginService(toolId, jarPath, classLoader);
-        tool.setVersion(version);
-        toolRepository.save(tool);
-
-        log.info("✅ Plugin updated and reloaded: {}", tool.getName());
+            loadAndRegisterPluginService(toolId, jarPath, classLoader);
+            log.info("✅ Plugin development updated and reloaded: {}", tool.getName());
+        }
     }
 
     @Override
