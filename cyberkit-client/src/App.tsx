@@ -5,11 +5,7 @@ type AppProps = {
 };
 
 const App: React.FC<AppProps> = ({ children }) => {
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 };
 
 export default App;

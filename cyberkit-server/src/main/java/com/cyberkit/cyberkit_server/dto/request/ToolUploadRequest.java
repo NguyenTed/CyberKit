@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,7 +15,6 @@ public class ToolUploadRequest {
     private String name;
     private String description;
     private String version;
-    private boolean isEnabled;
-    private boolean isPremium;
-    private String controllerClass;
+    private String icon;
+    private UUID categoryId;
 }

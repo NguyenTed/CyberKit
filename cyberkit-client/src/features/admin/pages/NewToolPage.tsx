@@ -1,8 +1,19 @@
+import ToolForm from "../components/ToolForm";
+import { uploadTool } from "../../../services/toolService";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
 const NewToolPage: React.FC = () => {
+  const navigate = useNavigate();
   return (
-    <div>
-      <h1>Add New Tool</h1>
-    </div>
+    <ToolForm
+      mode="create"
+      onSubmit={async (formData) => {
+        await uploadTool(formData);
+        toast.success("Tool created!");
+        navigate("/admin");
+      }}
+    />
   );
 };
 

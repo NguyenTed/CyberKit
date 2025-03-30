@@ -1,10 +1,9 @@
-package com.cyberkit.cyberkit_server.controlller;
+package com.cyberkit.cyberkit_server.controller;
 
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
 import com.cyberkit.cyberkit_server.service.SubscriptionService;
 import com.cyberkit.cyberkit_server.vnpay.VNPayService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

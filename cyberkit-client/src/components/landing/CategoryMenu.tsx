@@ -1,10 +1,11 @@
 import React from "react";
 import clsx from "clsx";
+import IconComponent from "../../utils/DynamicIcon";
 
 type Tab = {
   id: string;
   label: string;
-  icon: React.ReactNode;
+  icon: string;
 };
 
 type CategoryMenuProps = {
@@ -30,7 +31,9 @@ const CategoryMenu: React.FC<CategoryMenuProps> = ({
               activeTab === tab.id && "text-blue-600 font-semibold"
             )}
           >
-            <span className="text-lg">{tab.icon}</span>
+            <span className="text-lg">
+              <IconComponent name={tab.icon ?? "FaRandom"} />
+            </span>
             <span>{tab.label}</span>
             {activeTab === tab.id && (
               <span className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-full transition-all duration-300"></span>

@@ -16,7 +16,10 @@ public class ToolResponse {
     private String name;
     private String description;
     private String version;
+    private String icon;
     private boolean enabled;
     private boolean premium;
     private String frontendPath;
+    private String categoryId;
+    private String categoryName;
 }

@@ -8,6 +8,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "tools")
 @Data
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,9 +23,10 @@ public class ToolEntity {
 
     private String version;
     private String description;
-    @Column(name = "is_enabled")
+    private String icon;
+    @Column(name = "enabled")
     private boolean enabled;
-    @Column(name = "is_premium")
+    @Column(name = "premium")
     private boolean premium;
 
     @Column(nullable = false)
@@ -33,10 +35,7 @@ public class ToolEntity {
     @Column(nullable = false)
     private String frontendPath;
 
-    @Column(name = "controller_class")
-    private String controllerClass;
-
-    @Column(name = "plugin_id", unique = true)
-    private String pluginId;
-
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private ToolCategoryEntity category;
 }

@@ -2,37 +2,27 @@ package com.cyberkit.cyberkit_server.plugin;
 
 import com.cyberkit.cyberkit_server.data.ToolEntity;
 import com.cyberkit.cyberkit_server.repository.ToolRepository;
+import com.cyberkit.pluginservice.PluginService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 @Component
 @Slf4j
 public class PluginStartupLoader {
-
     private final PluginManager pluginManager;
     private final ToolRepository toolRepository;
-    private final ApplicationContext context;
 
-    public PluginStartupLoader(PluginManager pluginManager, ToolRepository toolRepository, ApplicationContext context) {
+    public PluginStartupLoader(PluginManager pluginManager, ToolRepository toolRepository) {
         this.pluginManager = pluginManager;
         this.toolRepository = toolRepository;
-        this.context = context;
     }
 
     @PostConstruct
@@ -41,108 +31,33 @@ public class PluginStartupLoader {
 
         for (ToolEntity tool : tools) {
             try {
-                String pluginId = tool.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+                String toolId = String.valueOf(tool.getId());
                 Path jarPath = Paths.get(tool.getBackendPath());
 
-                PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
+                PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, toolId);
                 ClassLoader classLoader = wrapper.getClassLoader();
 
-                String controllerClassName = tool.getControllerClass();
-                Class<?> controllerClass = classLoader.loadClass(controllerClassName);
-                Object controllerInstance = controllerClass.getDeclaredConstructor().newInstance();
+                try (JarInputStream jarStream = new JarInputStream(Files.newInputStream(jarPath))) {
+                    JarEntry entry;
+                    while ((entry = jarStream.getNextJarEntry()) != null) {
+                        String name = entry.getName();
+                        if (!entry.isDirectory() && name.endsWith(".class")) {
+                            String className = name.replace('/', '.').replace(".class", "");
+                            Class<?> clazz = classLoader.loadClass(className);
 
-                ConfigurableApplicationContext configCtx = (ConfigurableApplicationContext) context;
-                configCtx.getBeanFactory().autowireBean(controllerInstance);
-
-                // Check if bean is already registered
-                String beanName = "tool_" + pluginId;
-                if (!configCtx.getBeanFactory().containsSingleton(beanName)) {
-                    configCtx.getBeanFactory().registerSingleton(beanName, controllerInstance);
-                    registerPluginController(controllerInstance, controllerClass, tool.getPluginId());
+                            // Check if it implements PluginService
+                            if (PluginService.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
+                                PluginService service = (PluginService) clazz.getDeclaredConstructor().newInstance();
+                                log.info("✅ Loaded PluginService: {}", className);
+                            }
+                        }
+                    }
                 }
 
-                System.out.println("✅ Loaded plugin on startup: " + tool.getName());
-
+                log.info("✅ Loaded plugin on startup: {}", tool.getName());
             } catch (Exception e) {
-                System.err.println("❌ Failed to load plugin on startup: " + tool.getName());
-                e.printStackTrace();
+                log.error("❌ Failed to load plugin on startup: {}", tool.getName());
             }
         }
-    }
-
-    private void registerPluginController(Object controllerInstance, Class<?> controllerClass, String pluginId) {
-        RequestMappingHandlerMapping mapping = context.getBean(RequestMappingHandlerMapping.class);
-        Map<RequestMappingInfo, HandlerMethod> existingMappings = mapping.getHandlerMethods();
-
-        for (Method method : controllerClass.getDeclaredMethods()) {
-            RequestMappingInfo info = null;
-
-            if (method.isAnnotationPresent(GetMapping.class)) {
-                for (String path : method.getAnnotation(GetMapping.class).value()) {
-                    var endpoint = "/api/tool/" + pluginId + path;
-                    info = RequestMappingInfo
-                            .paths(endpoint)
-                            .methods(RequestMethod.GET)
-                            .build();
-
-                    if (!isAlreadyMapped(existingMappings, info)) {
-                        mapping.registerMapping(info, controllerInstance, method);
-                        System.out.println("🔗 Registered GET: " + path);
-                    } else {
-                        System.out.println("⚠️ Skipping already mapped GET: " + path);
-                    }
-                }
-            }
-
-            if (method.isAnnotationPresent(PostMapping.class)) {
-                for (String path : method.getAnnotation(PostMapping.class).value()) {
-                    var endpoint = "/api/tool/" + pluginId + path;
-                    info = RequestMappingInfo
-                            .paths(endpoint) // basePath might be "" or "/api/tool"
-                            .methods(RequestMethod.POST)
-                            .build();
-                    if (!isAlreadyMapped(existingMappings, info)) {
-                        mapping.registerMapping(info, controllerInstance, method);
-                        System.out.println("🔗 Registered POST: " + path);
-                    } else {
-                        System.out.println("⚠️ Skipping already mapped POST: " + path);
-                    }
-                }
-            }
-
-            if (method.isAnnotationPresent(RequestMapping.class)) {
-                RequestMapping rm = method.getAnnotation(RequestMapping.class);
-                for (String path : rm.value()) {
-                    info = RequestMappingInfo.paths(path).methods(rm.method()).build();
-                    if (!isAlreadyMapped(existingMappings, info)) {
-                        mapping.registerMapping(info, controllerInstance, method);
-                        System.out.println("🔗 Registered: " + path);
-                    } else {
-                        System.out.println("⚠️ Skipping already mapped: " + path);
-                    }
-                }
-            }
-        }
-
-        System.out.println("✅ Controller registered: " + controllerClass.getName());
-    }
-
-    private boolean isAlreadyMapped(Map<RequestMappingInfo, HandlerMethod> mappings, RequestMappingInfo newInfo) {
-        for (RequestMappingInfo existingInfo : mappings.keySet()) {
-            var existingPatterns = existingInfo.getPathPatternsCondition();
-            var newPatterns = newInfo.getPathPatternsCondition();
-            var existingMethods = existingInfo.getMethodsCondition();
-            var newMethods = newInfo.getMethodsCondition();
-
-            // If pattern condition or method condition is null, skip comparison
-            if (existingPatterns == null || newPatterns == null || existingMethods == null || newMethods == null) {
-                continue;
-            }
-
-            if (existingPatterns.equals(newPatterns) && existingMethods.equals(newMethods)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -20,7 +20,11 @@ function LoginPage() {
         localStorage.setItem("access_token", res.data.accessToken);
         setUserInfo(res.data.user);
         setIsAuthenticated(true);
-        navigate("/");
+        if(res.data.user.role === "ADMIN") {
+          navigate("/admin");
+        }
+        else 
+          navigate("/");
       } else {
         notification.error({
           message: "Error login user",
