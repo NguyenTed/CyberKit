@@ -1,7 +1,5 @@
 package com.cyberkit.cyberkit_server.controller;
 
-import java.io.IOException;
-
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
@@ -16,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -99,7 +100,7 @@ public class ToolController {
 
 
     @PostMapping("/execute/{toolId}/{action}")
-    public Map<String, Object> executeToolPOSTMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public Map<String, Object> executeToolPOSTMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         return toolService.executeTool(toolId, action, body);
     }
 

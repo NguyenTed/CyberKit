@@ -30,6 +30,8 @@ const ToolTable: React.FC = () => {
           a.name.localeCompare(b.name)
         );
         setPlugins(sortedPlugins);
+
+        console.log("Tool list ", res.data);
       })
       .catch(() => {})
       .finally(() => {});

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tool, getToolByIdAPI, executeTool } from "../services/toolService";
 import { toast, Toaster } from "sonner";
+import NavBar from "../layouts/NavBar";
 
 const baseUrl: string = import.meta.env.VITE_API_BASE_URL;
 
@@ -104,15 +105,19 @@ export default function ToolHost() {
 
   return (
     <>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">{tool.name}</h1>
-        <iframe
-          name={tool.id}
-          src={path}
-          width="100%"
-          height="600"
-          style={{ border: "none" }}
-        />
+      <NavBar />
+      <div className="max-w-5xl mx-auto p-6 min-h-screen pt-17 overflow-hidden">
+        <div className="relative p-10 bg-gray-100">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">{tool.name}</h1>
+          <div className="bg-white text-xl p-6 rounded-lg shadow-md">
+            <h3>{tool.description}</h3>
+          </div>
+          <iframe
+            src={path}
+            name={tool.id}
+            className="w-full h-[600px] mt-6 rounded-lg shadow-md border-0"
+          />
+        </div>
       </div>
       <Toaster richColors position="bottom-center" />
     </>
