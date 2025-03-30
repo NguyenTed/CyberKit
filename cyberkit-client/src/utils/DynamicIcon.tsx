@@ -7,6 +7,7 @@ import * as IoIcons from "react-icons/io5";
 import * as SiIcons from "react-icons/si";
 import * as CgIcons from "react-icons/cg";
 import * as LuIcons from "react-icons/lu";
+import * as BsIcons from "react-icons/bs";
 
 type IconPack =
   | typeof FaIcons
@@ -17,7 +18,8 @@ type IconPack =
   | typeof IoIcons
   | typeof SiIcons
   | typeof CgIcons
-  | typeof LuIcons;
+  | typeof LuIcons
+  | typeof BsIcons;
 
 const iconPacks: Record<string, IconPack> = {
   fa: FaIcons,
@@ -29,6 +31,7 @@ const iconPacks: Record<string, IconPack> = {
   si: SiIcons,
   cg: CgIcons,
   lu: LuIcons,
+  bs: BsIcons,
 };
 
 interface DynamicIconProps {
@@ -37,6 +40,12 @@ interface DynamicIconProps {
   color?: string;
   className?: string;
 }
+
+export const getValidIcon = (name: string): boolean => {
+  const packKey = name.slice(0, 2).toLowerCase();
+  const IconPack = iconPacks[packKey];
+  return !!IconPack?.[name as keyof typeof IconPack];
+};
 
 const DynamicIcon: React.FC<DynamicIconProps> = ({
   name,
@@ -54,7 +63,7 @@ const DynamicIcon: React.FC<DynamicIconProps> = ({
     className?: string;
   }>;
 
-  if (!IconComponent) return <span className={className}>❓</span>;
+  if (!IconComponent) return <span className={className}></span>;
 
   return <IconComponent size={size} color={color} className={className} />;
 };

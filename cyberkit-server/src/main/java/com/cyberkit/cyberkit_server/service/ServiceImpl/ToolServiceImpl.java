@@ -75,27 +75,6 @@ public class ToolServiceImpl implements ToolService {
 
     @Override
     public void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception {
-        String pluginId = request.getName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-
-        // Define base paths
-        Path pluginRootDir = Paths.get("tools", pluginId);
-        Path backendDir = pluginRootDir.resolve("backend");
-        Path frontendDir = pluginRootDir.resolve("frontend");
-
-        // 1. Save backend jar to /tools/{pluginId}/backend/{pluginId}.jar
-        Files.createDirectories(backendDir);
-        Path jarPath = backendDir.resolve(pluginId + ".jar");
-        Files.copy(backendJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
-
-        // 2. Extract frontend zip to /tools/{pluginId}/frontend/
-        extractFrontendZip(frontendZip, frontendDir);
-
-        PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
-        PluginClassLoader classLoader = wrapper.getClassLoader();
-
-        loadAndRegisterPluginService(pluginId, jarPath, classLoader);
-
-        // 5. Save metadata
         ToolEntity tool = ToolEntity.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -104,11 +83,34 @@ public class ToolServiceImpl implements ToolService {
                 .premium(false)
                 .enabled(false)
                 .category(toolCategoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Tool category not found")))
-                .backendPath(jarPath.toString())
-                .frontendPath("/plugins/" + pluginId + "/frontend/index.html")
-                .pluginId(pluginId)
+                .backendPath("")
+                .frontendPath("")
                 .build();
 
+        toolRepository.save(tool);
+        String toolId = String.valueOf(tool.getId());
+
+        // Define base paths
+        Path pluginRootDir = Paths.get("tools", toolId);
+        Path backendDir = pluginRootDir.resolve("backend");
+        Path frontendDir = pluginRootDir.resolve("frontend");
+
+        // 1. Save backend jar to /tools/{pluginId}/backend/{pluginId}.jar
+        Files.createDirectories(backendDir);
+        Path jarPath = backendDir.resolve(toolId + ".jar");
+        Files.copy(backendJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // 2. Extract frontend zip to /tools/{pluginId}/frontend/
+        extractFrontendZip(frontendZip, frontendDir);
+
+        PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, toolId);
+        PluginClassLoader classLoader = wrapper.getClassLoader();
+
+        loadAndRegisterPluginService(toolId, jarPath, classLoader);
+
+        // 5. Save metadata
+        tool.setBackendPath(jarPath.toString());
+        tool.setFrontendPath("/plugins/" + toolId + "/frontend/index.html");
         toolRepository.save(tool);
     }
 
@@ -136,10 +138,9 @@ public class ToolServiceImpl implements ToolService {
     public Map<String, Object> executeTool (String toolId, String action, Map<String, Object> input) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         ToolEntity toolEntity = toolRepository.findById(UUID.fromString(toolId)).orElseThrow(() -> new RuntimeException("Tool not found"));
         // 1. Get the plugin wrapper
-        String pluginId = toolEntity.getPluginId();
-        PluginWrapper wrapper = pluginManager.getPlugin(pluginId);
+        PluginWrapper wrapper = pluginManager.getPlugin(toolId);
         if (wrapper == null) {
-            throw new IllegalStateException("Plugin not loaded: " + pluginId);
+            throw new IllegalStateException("Plugin not loaded: " + toolEntity.getName());
         }
 
         // 2. Get class loader
@@ -168,16 +169,15 @@ public class ToolServiceImpl implements ToolService {
     public void updateTool(String toolId, MultipartFile newJar, MultipartFile newFrontendZip, String version) throws Exception {
         ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
                 .orElseThrow(() -> new RuntimeException("Tool not found"));
-        String pluginId = tool.getPluginId();
 
-        Path pluginRootDir = Paths.get("tools", pluginId);
+        Path pluginRootDir = Paths.get("tools", toolId);
         Path backendDir = pluginRootDir.resolve("backend");
         Path frontendDir = pluginRootDir.resolve("frontend");
-        Path jarPath = backendDir.resolve(pluginId + ".jar");
+        Path jarPath = backendDir.resolve(toolId + ".jar");
 
         // 🔌 Unload if loaded
-        if (pluginManager.getPlugin(pluginId) != null) {
-            pluginManager.unloadPlugin(pluginId);
+        if (pluginManager.getPlugin(toolId) != null) {
+            pluginManager.unloadPlugin(toolId);
         }
 
         // ♻️ Replace backend
@@ -194,32 +194,33 @@ public class ToolServiceImpl implements ToolService {
 
 
         // 5. Reload backend plugin
-        PluginWrapper wrapper = pluginManager.reloadPlugin(pluginId, jarPath);
+        PluginWrapper wrapper = pluginManager.reloadPlugin(toolId, jarPath);
         ClassLoader classLoader = wrapper.getClassLoader();
 
-        loadAndRegisterPluginService(pluginId, jarPath, classLoader);
+        loadAndRegisterPluginService(toolId, jarPath, classLoader);
         tool.setVersion(version);
         toolRepository.save(tool);
 
-        log.info("✅ Plugin updated and reloaded: {}", pluginId);
+        log.info("✅ Plugin updated and reloaded: {}", tool.getName());
     }
 
     @Override
     public void deleteTool(String toolId) throws IOException {
         ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
                 .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
-        String pluginId = tool.getPluginId();
 
-        pluginManager.unloadPlugin(pluginId);
+        String toolName = tool.getName();
 
-        Path pluginRoot = Paths.get("tools", pluginId);
+        pluginManager.unloadPlugin(toolId);
+
+        Path pluginRoot = Paths.get("tools", toolId);
         if (Files.exists(pluginRoot)) {
             FileUtils.deleteDirectory(pluginRoot.toFile());
             log.info("Deleted plugin files: {}", pluginRoot);
         }
 
         toolRepository.delete(tool);
-        log.info("Plugin deleted successfully: {}", pluginId);
+        log.info("Plugin deleted successfully: {}", toolName);
     }
 
     private Class<?> findPluginServiceImpl(Path jarPath, PluginClassLoader classLoader) throws IOException, ClassNotFoundException {

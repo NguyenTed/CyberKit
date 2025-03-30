@@ -31,10 +31,10 @@ public class PluginStartupLoader {
 
         for (ToolEntity tool : tools) {
             try {
-                String pluginId = tool.getPluginId();
+                String toolId = String.valueOf(tool.getId());
                 Path jarPath = Paths.get(tool.getBackendPath());
 
-                PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, pluginId);
+                PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, toolId);
                 ClassLoader classLoader = wrapper.getClassLoader();
 
                 try (JarInputStream jarStream = new JarInputStream(Files.newInputStream(jarPath))) {

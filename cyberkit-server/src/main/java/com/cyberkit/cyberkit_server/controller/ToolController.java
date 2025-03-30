@@ -1,4 +1,6 @@
-package com.cyberkit.cyberkit_server.controlller;
+package com.cyberkit.cyberkit_server.controller;
+
+import java.io.IOException;
 
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
@@ -6,15 +8,16 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.service.ToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -137,5 +140,31 @@ public class ToolController {
                     .error("Fail to delete tool: " + e.getMessage())
                     .build();
         }
+    }
+
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<Resource> download(@PathVariable("fileName") String fileName) throws IOException {
+        log.info("ToolController.download");
+        ClassPathResource resource = null;
+        if (Objects.equals(fileName, "plugin-template")) {
+            log.info("plugin-template");
+            resource = new ClassPathResource("templates/plugin-template.zip");
+        } else if (Objects.equals(fileName, "plugin-service")) {
+            log.info("plugin-service");
+            resource = new ClassPathResource("templates/plugin-service.zip");
+        }
+
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName + ".zip");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(resource.contentLength())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }

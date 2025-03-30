@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/tools").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").permitAll()
                         .requestMatchers("/api/tool/**").permitAll()
                         .requestMatchers("/api/bcrypt/hash", "/api/bcrypt/compare", "/api/ascii/text-to-binary", "/api/ascii/binary-to-text").permitAll()
                         .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()

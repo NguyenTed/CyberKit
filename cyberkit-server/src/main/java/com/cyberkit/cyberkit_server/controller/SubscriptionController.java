@@ -1,4 +1,4 @@
-package com.cyberkit.cyberkit_server.controlller;
+package com.cyberkit.cyberkit_server.controller;
 
 import com.cyberkit.cyberkit_server.dto.request.VNPayOrderDTO;
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;

@@ -10,7 +10,6 @@ import {
   toggleEnabledTool,
   removeTool,
 } from "../../../services/toolService";
-import IconComponent from "../../../utils/DynamicIcon";
 
 const ToolTable: React.FC = () => {
   const [plugins, setPlugins] = useState<Tool[]>([]);

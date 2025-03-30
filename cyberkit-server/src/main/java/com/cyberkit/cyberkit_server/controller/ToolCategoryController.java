@@ -1,4 +1,4 @@
-package com.cyberkit.cyberkit_server.controlller;
+package com.cyberkit.cyberkit_server.controller;
 
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
 import com.cyberkit.cyberkit_server.dto.response.ToolCategoryResponse;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tool-categories")
+@RequestMapping("/api/v1/tool-categories")
 @RequiredArgsConstructor
 public class ToolCategoryController {
     private final ToolCategoryService toolCategoryService;

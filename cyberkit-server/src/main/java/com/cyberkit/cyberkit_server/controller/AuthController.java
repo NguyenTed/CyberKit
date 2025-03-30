@@ -1,4 +1,4 @@
-package com.cyberkit.cyberkit_server.controlller;
+package com.cyberkit.cyberkit_server.controller;
 
 
 import com.cyberkit.cyberkit_server.dto.GithubSocialDTO;
@@ -23,7 +23,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
