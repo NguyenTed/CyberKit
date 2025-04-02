@@ -215,6 +215,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
                       <div className="text-sm text-gray-700">
                         We support icons of several icon sets from{" "}
                         <a
+                          target="_blank"
                           href="https://react-icons.github.io/react-icons/"
                           className="text-[#2b7fff] hover:underline"
                         >
