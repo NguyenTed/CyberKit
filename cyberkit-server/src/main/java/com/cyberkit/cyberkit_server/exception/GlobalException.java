@@ -50,5 +50,14 @@ public class GlobalException {
         res.setData("");
         return ResponseEntity.badRequest().body(res);
     }
+    @ExceptionHandler(value = UnauthorizedPermissionException.class)
+    public ResponseEntity<RestResponse<Object>> handleUnauthorizedException(UnauthorizedPermissionException exception){
+        RestResponse res = new RestResponse<>();
+        res.setError(exception.getMessage());
+        res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+        res.setMessage(exception.getMessage());
+        res.setData("");
+        return ResponseEntity.badRequest().body(res);
+    }
 
 }
