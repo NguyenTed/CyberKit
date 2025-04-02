@@ -1,6 +1,7 @@
 package com.cyberkit.cyberkit_server.controller;
 
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
+import com.cyberkit.cyberkit_server.enums.SubscriptionType;
 import com.cyberkit.cyberkit_server.service.SubscriptionService;
 import com.cyberkit.cyberkit_server.vnpay.VNPayService;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,10 @@ public class PaymentController {
         Long createdSubscriptionId= subscriptionService.createSubscription(subscriptionType);
         String VNPayUrl = vnPayService.generatePaymentUrl(subscriptionType,createdSubscriptionId);
         return ResponseEntity.ok(new RestResponse<>(200,"","",VNPayUrl));
+    }
+    @GetMapping("/type")
+    public ResponseEntity<RestResponse> getPlanTypes(){
+        return ResponseEntity.ok(new RestResponse(200,"","", SubscriptionType.values()));
     }
 
 }

@@ -13,12 +13,13 @@ import UpdateToolPage from "./features/admin/pages/UpdateToolPage.tsx";
 import LoginPage from "./pages/Login.tsx";
 import SignupPage from "./pages/SignUp.tsx";
 import GitHubOAuthCallback from "./components/Oauth2GithubCallback.tsx";
-import PricingPage from "./pages/Pricing.tsx";
 import VnpayCallback from "./components/VNPayCallback.tsx";
 import ToolGallery from "./pages/ToolGallery.tsx";
 import ToolHost from "./pages/ToolHost.tsx";
 import ForbiddenPage from "./pages/Forbidden.tsx";
 import AdminRoute from "./features/admin/components/AdminRoute.tsx";
+import PricingPage from "./pages/Pricing.tsx";
+
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
         path: "/pricing",
         element: <PricingPage />,
       },
+    
     ],
   },
   {
