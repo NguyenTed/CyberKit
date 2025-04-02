@@ -88,7 +88,14 @@ const ToolForm: React.FC<ToolFormProps> = ({
     } else if (
       !icon.startsWith("Fa") &&
       !icon.startsWith("Md") &&
-      !icon.startsWith("Lu")
+      !icon.startsWith("Ai") &&
+      !icon.startsWith("Lu") &&
+      !icon.startsWith("Bi") &&
+      !icon.startsWith("Hi") &&
+      !icon.startsWith("Io") &&
+      !icon.startsWith("Si") &&
+      !icon.startsWith("Cg") &&
+      !icon.startsWith("Bs")
     ) {
       errors.icon = "This icon is not supported.";
     }
