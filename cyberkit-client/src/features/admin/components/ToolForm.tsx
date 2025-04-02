@@ -61,6 +61,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
       const blob = new Blob([response.data], { type: "application/zip" });
       const url = window.URL.createObjectURL(blob);
 
+      console.log("Downloading file:", url);
       const link = document.createElement("a");
       link.href = url;
       link.download = `${fileName}.zip`;
@@ -88,7 +89,14 @@ const ToolForm: React.FC<ToolFormProps> = ({
     } else if (
       !icon.startsWith("Fa") &&
       !icon.startsWith("Md") &&
-      !icon.startsWith("Lu")
+      !icon.startsWith("Ai") &&
+      !icon.startsWith("Lu") &&
+      !icon.startsWith("Bi") &&
+      !icon.startsWith("Hi") &&
+      !icon.startsWith("Io") &&
+      !icon.startsWith("Si") &&
+      !icon.startsWith("Cg") &&
+      !icon.startsWith("Bs")
     ) {
       errors.icon = "This icon is not supported.";
     }
@@ -207,6 +215,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
                       <div className="text-sm text-gray-700">
                         We support icons of several icon sets from{" "}
                         <a
+                          target="_blank"
                           href="https://react-icons.github.io/react-icons/"
                           className="text-[#2b7fff] hover:underline"
                         >
@@ -351,7 +360,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
             <FileUpload
               label="Frontend (ZIP folder)"
               required={mode === "create"}
-              acceptedFormats="application/zip"
+              acceptedFormats="application/**"
               onFileSelect={setFrontendFile}
               errorMessage={formErrors.frontend}
             />

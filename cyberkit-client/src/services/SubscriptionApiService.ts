@@ -1,5 +1,9 @@
 import axios from "./AxiosCustomize"
-
+export type SubscriptionType = {
+  name: string;
+  price: number;
+    duration: number;
+};
 const getVNPayUrl = (data:string) =>{
     const URL_BACKEND = "/api/v1/payment/vnpay/url/"+data;
     return axios.get(URL_BACKEND)
@@ -20,5 +24,8 @@ const updateSubscription = (subscriptionId: string, vnp_TransactionNo: string, v
     return axios.post(URL_BACKEND, data)
 
 }
-
-export { getVNPayUrl, updateSubscription}
+const getSubscriptionTypes = () =>{
+    const URL_BACKEND = "/api/v1/subscriptions/types";
+    return axios.get<IBackendRes<SubscriptionType>>(URL_BACKEND)
+}
+export { getVNPayUrl, updateSubscription, getSubscriptionTypes }
