@@ -31,5 +31,4 @@ public class PaymentController {
     public ResponseEntity<RestResponse> getPlanTypes(){
         return ResponseEntity.ok(new RestResponse(200,"","", SubscriptionType.values()));
     }
-
 }

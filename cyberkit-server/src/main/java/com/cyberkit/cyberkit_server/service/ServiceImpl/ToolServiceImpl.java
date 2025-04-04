@@ -1,14 +1,19 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 import com.cyberkit.cyberkit_server.data.ToolEntity;
+import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
+import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.mapper.ToolMapper;
 import com.cyberkit.cyberkit_server.plugin.PluginClassLoader;
 import com.cyberkit.cyberkit_server.plugin.PluginManager;
 import com.cyberkit.cyberkit_server.plugin.PluginWrapper;
 import com.cyberkit.cyberkit_server.repository.ToolCategoryRepository;
 import com.cyberkit.cyberkit_server.repository.ToolRepository;
+import com.cyberkit.cyberkit_server.service.AccountService;
 import com.cyberkit.cyberkit_server.service.ToolService;
+import com.cyberkit.cyberkit_server.util.SecurityUtil;
+import com.cyberkit.cyberkit_server.util.StringUtil;
 import com.cyberkit.pluginservice.PluginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +46,7 @@ public class ToolServiceImpl implements ToolService {
     private final ToolCategoryRepository toolCategoryRepository;
     private final PluginManager pluginManager;
     private final ToolMapper toolMapper;
+    private final AccountService accountService;
 
     @Override
     public ToolResponse getToolById(String id) {
@@ -282,4 +288,33 @@ public class ToolServiceImpl implements ToolService {
 
         throw new IllegalStateException("No PluginServices implementation found in plugin: " + toolId);
     }
+
+    @Override
+    public List<ToolResponse> searchTools(String keyWord) {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
+                SecurityUtil.getCurrentUserLogin().get():"";
+        UserDTO userDTO = null;
+        List<ToolEntity> toolEntities = new ArrayList<>();
+        if(!email.equals("anonymousUser")){
+            userDTO = accountService.getUserInfoByEmail(email);
+        }
+        if(userDTO!=null && userDTO.getRole().equals(RoleEnum.ADMIN)){
+            toolEntities = toolRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord,keyWord);
+        }
+        else if(userDTO!=null && userDTO.isPremium()==true){
+            toolEntities = toolRepository.findEnabledToolsByKeyword(keyWord);
+        }
+        else{
+            toolEntities= toolRepository.findNotPremiumEnabledToolsByKeyword(keyWord);
+        }
+        toolEntities = sortToolsByKeyword(toolEntities,keyWord);
+        return toolEntities.stream().map(toolMapper::toToolResponse).toList();
+    }
+
+    public List<ToolEntity> sortToolsByKeyword(List<ToolEntity> tools, String keyword) {
+        tools.sort(Comparator.comparingInt(t -> StringUtil.minDistance( keyword.toLowerCase(),t.getName().toLowerCase())));
+        return tools;
+    }
+
+
 }

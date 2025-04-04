@@ -51,6 +51,11 @@ const executeTool = (
   }
 };
 
+const searchTool = (keyWord: string) => {
+  const URL_BACKEND = "/api/v1/tools/search/" + keyWord;
+  return axios.get<IBackendRes<Tool[]>>(URL_BACKEND);
+}
+
 const removeTool = (toolId: string) => {
   return axios.delete<void>(`/api/v1/tools/${toolId}`);
 };
@@ -83,4 +88,5 @@ export {
   uploadTool,
   updateTool,
   downloadFile,
+  searchTool
 };

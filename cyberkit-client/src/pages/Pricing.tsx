@@ -13,8 +13,12 @@ const SubscriptionPlans = [
 
 const PricingPage: React.FC = () => {
     const [tools, setTools] = useState<Tool[]>([]);
+    
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedSubscription, setSelectedSubscription] = useState<string | null>(null);
+
+
+
 
     const handlePayment = (subscriptionType: string) => {
         console.log("Selected subscription type:", subscriptionType);
@@ -48,8 +52,8 @@ const PricingPage: React.FC = () => {
             const sortedPlugins = [...res.data].sort((a, b) =>
             a.name.localeCompare(b.name)
         );
-        setTools(sortedPlugins);
-
+        const filteredPlugins = sortedPlugins.filter((record: Tool) => record.enabled);
+        setTools(filteredPlugins);
             console.log("Tool list ", res.data);
         })
         .catch(() => {})

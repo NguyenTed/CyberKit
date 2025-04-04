@@ -3,6 +3,8 @@ package com.cyberkit.cyberkit_server.data;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -38,4 +40,7 @@ public class ToolEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private ToolCategoryEntity category;
+
+    @ManyToMany(mappedBy = "tools", fetch = FetchType.LAZY)
+    private List<UserEntity> users = new ArrayList<>();
 }

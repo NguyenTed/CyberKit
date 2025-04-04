@@ -8,7 +8,8 @@ import { ClipLoader } from "react-spinners";
 import { useCurrentApp } from "../components/context/AuthContext";
 import UserMenu from "../components/UserMenu";
 import { getDelayAccountAPI, logoutAPI } from "../services/AuthApiService";
-import { CrownTwoTone } from "@ant-design/icons";
+import { CrownTwoTone, SearchOutlined } from "@ant-design/icons";
+import SearchModal from "../components/SearchModal";
 const categories = [
   "Crypto",
   "Converter",
@@ -24,6 +25,7 @@ const categories = [
 
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,7 +95,7 @@ const NavBar: React.FC = () => {
           <nav className="w-full h-16 fixed top-0 bg-white shadow-md px-6 py-2 z-40">
             <div className="max-w-6xl mx-auto flex items-center justify-between h-full">
               {/* Left Side */}
-              <div className="flex items-center space-x-8 h-full">
+              <div className="flex items-center space-x-10 h-full">
                 <img
                   src="../../logo-no-background.png"
                   className="w-[137px] h-[24px] cursor-pointer"
@@ -144,7 +146,20 @@ const NavBar: React.FC = () => {
                     Pricing
                   </a>
                 )}
+                <div className="ml-auto">
+                  <button
+                    className="px-2 py-1 border rounded-lg flex items-center text-gray-500 hover:bg-gray-100 text-lg w-[400px]"
+                    onClick={() => setModalOpen(true)}
+                  >
+                    <SearchOutlined className="mr-2 text-xl" />
+                    <span>Search...</span>
+                  </button>
+                </div>
+                <SearchModal
+                  isOpen={isModalOpen}
+                  onClose={() => setModalOpen(false)}></SearchModal>
               </div>
+              
 
               {/* Right Side */}
               <div className="flex space-x-4">

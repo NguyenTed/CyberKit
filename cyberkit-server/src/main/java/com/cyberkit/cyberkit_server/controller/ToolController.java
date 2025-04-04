@@ -179,4 +179,9 @@ public class ToolController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
+    @GetMapping("/search/{keyWord}")
+    public ResponseEntity<RestResponse> searchTools(@PathVariable("keyWord") String keyWord){
+        return ResponseEntity.ok(new RestResponse<>(200,"","",toolService.searchTools(keyWord)));
+    }
+
 }

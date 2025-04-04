@@ -1,35 +1,44 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
-import com.cyberkit.cyberkit_server.data.AccountEntity;
-import com.cyberkit.cyberkit_server.data.AdminEntity;
-import com.cyberkit.cyberkit_server.data.SubscriptionEntity;
-import com.cyberkit.cyberkit_server.data.UserEntity;
+import com.cyberkit.cyberkit_server.data.*;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
+import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
+import com.cyberkit.cyberkit_server.mapper.ToolMapper;
 import com.cyberkit.cyberkit_server.repository.AccountRepository;
 import com.cyberkit.cyberkit_server.repository.SubscriptionRepository;
+import com.cyberkit.cyberkit_server.repository.ToolRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.UserService;
+import com.cyberkit.cyberkit_server.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
-
-    public UserServiceImpl(UserRepository userRepository, SubscriptionRepository subscriptionRepository) {
+    private final ToolRepository toolRepository;
+    private final AccountRepository accountRepository;
+    private final ToolMapper toolMapper;
+    public UserServiceImpl(UserRepository userRepository, SubscriptionRepository subscriptionRepository, ToolRepository toolRepository, AccountRepository accountRepository, ToolMapper toolMapper) {
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.toolRepository = toolRepository;
+        this.accountRepository = accountRepository;
+        this.toolMapper = toolMapper;
     }
 
     @Override
@@ -50,5 +59,46 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         return true;
+    }
+
+    @Transactional
+    @Override
+    public void likeTool(String toolId) {
+        Optional<ToolEntity> optionalToolEntity = toolRepository.findById(UUID.fromString(toolId));
+        if(optionalToolEntity.isEmpty()) throw  new GeneralAllException("Invalid toolId!");
+        ToolEntity toolEntity = optionalToolEntity.get();
+        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
+                SecurityUtil.getCurrentUserLogin().get():"";
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        UserEntity userEntity = null;
+        if(accountEntity.getUser() instanceof UserEntity){
+            userEntity =(UserEntity) accountEntity.getUser();
+        }
+        if(userEntity==null) throw  new GeneralAllException("Invalid Email!");
+        if(!userRepository.existsByIdAndToolsId(userEntity.getId(),UUID.fromString(toolId))){
+            List<ToolEntity> toolEntities = userEntity.getTools();
+            toolEntities.add(toolEntity);
+            userRepository.save(userEntity);
+        }
+        else{
+            userRepository.removeToolFromFavoritesNative(userEntity.getId(),UUID.fromString(toolId));
+        }
+
+    }
+
+
+    @Override
+    public List<ToolResponse> getFavouriteTools() {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
+                SecurityUtil.getCurrentUserLogin().get():"";
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        UserEntity userEntity = null;
+        if(accountEntity.getUser() instanceof UserEntity){
+            userEntity =(UserEntity) accountEntity.getUser();
+        }
+        if(userEntity==null) throw  new GeneralAllException("Invalid Email!");
+        List<ToolEntity> toolEntities = userEntity.getTools();
+        return toolEntities.stream().map(toolMapper::toToolResponse).toList();
+
     }
 }

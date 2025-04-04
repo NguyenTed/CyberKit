@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,5 +21,9 @@ public class UserEntity extends AbstractUserEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<SubscriptionEntity> subscriptions;
     private Date endDate;
-
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_favourite_tool",
+            joinColumns = @JoinColumn(name = "user_id", nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "tool_id", nullable = false))
+    private List<ToolEntity> tools = new ArrayList<>();
 }
