@@ -27,7 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/plugins/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
                         .requestMatchers("/api/tools/**","/api/v1/tools/search/**").permitAll()
                         .requestMatchers("/api/bcrypt/hash", "/api/bcrypt/compare", "/api/ascii/text-to-binary", "/api/ascii/binary-to-text").permitAll()

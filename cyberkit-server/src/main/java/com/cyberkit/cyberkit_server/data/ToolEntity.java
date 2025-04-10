@@ -24,6 +24,7 @@ public class ToolEntity {
     private String name;
 
     private String version;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String icon;
     @Column(name = "enabled")
