@@ -1,7 +1,6 @@
 package com.cyberkit.cyberkit_server.data;
 
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
-import com.cyberkit.cyberkit_server.enums.SubscriptionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +16,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name ="subscriptions")
 public class SubscriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,8 @@ public class SubscriptionEntity {
     private String TransactionNo;
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
-    @Enumerated(EnumType.STRING)
-    private SubscriptionType subscriptionType;
+    @ManyToOne
+    @JoinColumn(name = "subscriptionType_id")
+    private SubscriptionTypeEntity subscriptionType;
 
 }

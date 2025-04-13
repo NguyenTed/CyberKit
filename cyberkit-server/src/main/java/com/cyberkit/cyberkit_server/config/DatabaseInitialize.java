@@ -4,7 +4,6 @@ import com.cyberkit.cyberkit_server.data.*;
 import com.cyberkit.cyberkit_server.enums.GenderEnum;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.repository.*;
-import jakarta.persistence.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,14 +23,16 @@ public class DatabaseInitialize implements CommandLineRunner {
     private final SubscriptionRepository subscriptionRepository;
     private final ToolCategoryRepository toolCategoryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SubscriptionTypeRepository subscriptionTypeRepository;
 
-    public DatabaseInitialize(AccountRepository accountRepository, AdminRepository adminRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, ToolCategoryRepository toolCategoryRepository, PasswordEncoder passwordEncoder) {
+    public DatabaseInitialize(AccountRepository accountRepository, AdminRepository adminRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, ToolCategoryRepository toolCategoryRepository, PasswordEncoder passwordEncoder, SubscriptionTypeRepository subscriptionTypeRepository) {
         this.accountRepository = accountRepository;
         this.adminRepository = adminRepository;
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.toolCategoryRepository = toolCategoryRepository;
         this.passwordEncoder = passwordEncoder;
+        this.subscriptionTypeRepository = subscriptionTypeRepository;
     }
 
     @Override
@@ -83,13 +84,32 @@ public class DatabaseInitialize implements CommandLineRunner {
             secondUser.setName("User2");
             secondUser.setDateOfBirth(dateOfBirth);
             secondUser.setGender(GenderEnum.MALE);
-            secondUser.setPremium(true);
+            secondUser.setPremium(false);
             secondUser.setSubscriptions(subscriptionEntityList);
             //Save the second user
             secondUser=userRepository.save(secondUser);
             //Save the second user Account
             AccountEntity secondUserAccount = new AccountEntity(null,"user2@gmail.com", passwordEncoder.encode("123456"),"", RoleEnum.USER ,secondUser);
             accountRepository.save(secondUserAccount);
+
+            //Init the subscription entity
+            SubscriptionTypeEntity subscriptionTypeEntity1 = new SubscriptionTypeEntity();
+            subscriptionTypeEntity1.setName("BASIC");
+            subscriptionTypeEntity1.setDuration(30);
+            subscriptionTypeEntity1.setPrice(100000);
+
+            SubscriptionTypeEntity subscriptionTypeEntity2 = new SubscriptionTypeEntity();
+            subscriptionTypeEntity2.setName("MEDIUM");
+            subscriptionTypeEntity2.setDuration(90);
+            subscriptionTypeEntity2.setPrice(200000);
+
+            SubscriptionTypeEntity subscriptionTypeEntity3 = new SubscriptionTypeEntity();
+            subscriptionTypeEntity3.setName("ADVANCE");
+            subscriptionTypeEntity3.setDuration(365);
+            subscriptionTypeEntity3.setPrice(500000);
+            subscriptionTypeRepository.save(subscriptionTypeEntity1);
+            subscriptionTypeRepository.save(subscriptionTypeEntity2);
+            subscriptionTypeRepository.save(subscriptionTypeEntity3);
         }
         if(countAccounts>0){
             System.out.println(">>> SKIP INIT DATABASE ~ ALREADY HAVE DATA...");

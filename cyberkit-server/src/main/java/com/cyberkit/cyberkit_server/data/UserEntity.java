@@ -21,6 +21,7 @@ public class UserEntity extends AbstractUserEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<SubscriptionEntity> subscriptions;
     private Date endDate;
+    private String planType;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_favourite_tool",
             joinColumns = @JoinColumn(name = "user_id", nullable = false),

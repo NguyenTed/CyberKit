@@ -7,6 +7,7 @@ import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
+import com.cyberkit.cyberkit_server.exception.UnauthorizedPermissionException;
 import com.cyberkit.cyberkit_server.mapper.ToolMapper;
 import com.cyberkit.cyberkit_server.repository.AccountRepository;
 import com.cyberkit.cyberkit_server.repository.SubscriptionRepository;
@@ -41,21 +42,25 @@ public class UserServiceImpl implements UserService {
         this.toolMapper = toolMapper;
     }
 
+
     @Override
-    public Boolean checkValidSubscription(Long id) {
-        UserEntity userEntity = userRepository.findById(id).get();
-        List<SubscriptionEntity> subscriptionEntityList=  subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(id, SubscriptionStatus.SUCCESS);
-        if(subscriptionEntityList==null|| subscriptionEntityList.isEmpty()){
-            userEntity.setPremium(false);
-            userRepository.save(userEntity);
-            return false;
-        }
-        SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
-        Date endDate = newestSubscription.getEndDate();
+    public Boolean checkValidSubscription(Date endDate, Long userId) {
+//        UserEntity userEntity = userRepository.findById(id).get();
+//        List<SubscriptionEntity> subscriptionEntityList=  subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(id, SubscriptionStatus.SUCCESS);
+//        if(subscriptionEntityList==null|| subscriptionEntityList.isEmpty()){
+//            userEntity.setPremium(false);
+//            userRepository.save(userEntity);
+//            return false;
+//        }
+//        SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
+//        Date endDate = newestSubscription.getEndDate();
         Date now = new Date();
         if(endDate.before(now)){
+            //Update user canceling premium
+            UserEntity userEntity = userRepository.findById(userId).get();
+            if(userEntity ==null) throw new GeneralAllException("Invalid user id!!");
             userEntity.setPremium(false);
-            userRepository.save(userEntity);
+            userEntity.setEndDate(null);
             return false;
         }
         return true;
@@ -100,5 +105,25 @@ public class UserServiceImpl implements UserService {
         List<ToolEntity> toolEntities = userEntity.getTools();
         return toolEntities.stream().map(toolMapper::toToolResponse).toList();
 
+    }
+
+    @Override
+    public Boolean checkExistingSubscription() {
+        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
+                SecurityUtil.getCurrentUserLogin().get():"";
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        AbstractUserEntity abstractUserEntity = accountEntity.getUser();
+        if(abstractUserEntity instanceof UserEntity){
+            List<SubscriptionEntity> subscriptionEntityList=  subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(abstractUserEntity.getId(), SubscriptionStatus.SUCCESS);
+            if(subscriptionEntityList.isEmpty()) return false;
+            SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
+            Date now = new Date();
+            Date endDate = newestSubscription.getEndDate();
+            if(endDate.after(now)) return true;
+        }
+        else{
+            throw  new UnauthorizedPermissionException("Not applying for Admin!!");
+        }
+        return false;
     }
 }

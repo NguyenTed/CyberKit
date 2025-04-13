@@ -1,6 +1,5 @@
 package com.cyberkit.cyberkit_server.vnpay;
 
-import com.cyberkit.cyberkit_server.enums.SubscriptionType;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -12,8 +11,7 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class VNPayService {
 
-    public String generatePaymentUrl(String type, Long subscriptionId){
-        Long price = SubscriptionType.valueOf(type).getPrice();
+    public String generatePaymentUrl(Long price, Long subscriptionId){
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";

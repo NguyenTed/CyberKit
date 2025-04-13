@@ -15,6 +15,7 @@ import com.cyberkit.cyberkit_server.repository.SubscriptionRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
 import com.cyberkit.cyberkit_server.service.UserService;
+import com.cyberkit.cyberkit_server.util.DateUtil;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -112,17 +113,23 @@ public class AccountServiceImpl implements AccountService {
 
         Date birthOfDate = abstractUserEntity.getDateOfBirth();
         if(birthOfDate!=null){
-            LocalDate localDate = birthOfDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedDate = localDate.format(formatter);
-            userDTO.setDateOfBirth(formattedDate);
+            userDTO.setDateOfBirth(DateUtil.dateToString(birthOfDate));
         }
         userDTO.setPremium(false);
         if(abstractUserEntity instanceof  UserEntity){
             userDTO.setPremium(((UserEntity) abstractUserEntity).isPremium());
             //Check the valid expired premium
-            if(userDTO.isPremium()&& !userService.checkValidSubscription(abstractUserEntity.getId())){
+            if(userDTO.isPremium()&& !userService.checkValidSubscription( ((UserEntity) abstractUserEntity).getEndDate(), abstractUserEntity.getId())){
                 userDTO.setPremium(false);
+                userDTO.setEndDate(null);
+                userDTO.setPlanType(null);
+            }
+            else{
+                Date endDate = ((UserEntity) abstractUserEntity).getEndDate();
+                if(endDate!=null){
+                    userDTO.setEndDate(DateUtil.dateToString(endDate));
+                    userDTO.setPlanType(((UserEntity) abstractUserEntity).getPlanType());
+                }
             }
         }
         return userDTO;

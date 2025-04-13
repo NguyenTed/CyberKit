@@ -19,6 +19,7 @@ import ToolHost from "./pages/ToolHost.tsx";
 import ForbiddenPage from "./pages/Forbidden.tsx";
 import AdminRoute from "./features/admin/components/AdminRoute.tsx";
 import PricingPage from "./pages/Pricing.tsx";
+import PricingAdminPage from "./features/admin/pages/PricingAdmin.tsx";
 
 
 const router = createBrowserRouter([
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
         path: "/pricing",
         element: <PricingPage />,
       },
+      {
+        path: "/admin/pricing",
+        element: <PricingAdminPage />,
+      }
     
     ],
   },

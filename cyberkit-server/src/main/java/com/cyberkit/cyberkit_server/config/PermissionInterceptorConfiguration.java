@@ -35,6 +35,7 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
                 "/api/v1/auth/github-code/**",
                 "/api/v1/payment/**",
                 "/api/v1/subscriptions",
+                "/api/v1/subscriptions/**",
                 "/api/v1/tools",
                 "/api/v1/users/**"
         };

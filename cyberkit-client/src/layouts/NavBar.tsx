@@ -138,9 +138,10 @@ const NavBar: React.FC = () => {
                   )}
                 </div>
 
-                {!userInfo?.premium && (
+                {(!userInfo?.premium || userInfo?.premium)  && (
+              
                   <a
-                    href="/pricing"
+                    href={userInfo?.role === "ADMIN" ? "/admin/pricing" : "/pricing"}
                     className="text-gray-700 hover:text-blue-600 font-medium"
                   >
                     Pricing

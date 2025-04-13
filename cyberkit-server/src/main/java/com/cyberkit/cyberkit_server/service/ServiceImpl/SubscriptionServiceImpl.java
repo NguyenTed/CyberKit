@@ -1,14 +1,11 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
-import com.cyberkit.cyberkit_server.data.AbstractUserEntity;
-import com.cyberkit.cyberkit_server.data.AccountEntity;
-import com.cyberkit.cyberkit_server.data.SubscriptionEntity;
-import com.cyberkit.cyberkit_server.data.UserEntity;
+import com.cyberkit.cyberkit_server.data.*;
 import com.cyberkit.cyberkit_server.dto.request.VNPayOrderDTO;
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
-import com.cyberkit.cyberkit_server.enums.SubscriptionType;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.repository.SubscriptionRepository;
+import com.cyberkit.cyberkit_server.repository.SubscriptionTypeRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.AccountService;
 import com.cyberkit.cyberkit_server.service.SubscriptionService;
@@ -26,19 +23,29 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final AccountService accountService;
+    private final UserService userService;
     private final UserRepository userRepository;
+    private final SubscriptionTypeRepository subscriptionTypeRepository;
 
-    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, AccountService accountService, UserRepository userRepository) {
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, AccountService accountService, UserService userService, UserRepository userRepository, SubscriptionTypeRepository subscriptionTypeRepository) {
         this.subscriptionRepository = subscriptionRepository;
         this.accountService = accountService;
+        this.userService = userService;
         this.userRepository = userRepository;
+        this.subscriptionTypeRepository = subscriptionTypeRepository;
     }
 
 
     @Override
-    public Long createSubscription(String subscriptionType) {
+    public Long createSubscription(Long subscriptionTypeId) {
+        if(userService.checkExistingSubscription())
+            throw new GeneralAllException("Existing unexpired premium plan!!");
         SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
-        subscriptionEntity.setSubscriptionType(SubscriptionType.valueOf(subscriptionType));
+        SubscriptionTypeEntity subscriptionTypeEntity = subscriptionTypeRepository.findById(subscriptionTypeId).get();
+        if(subscriptionTypeEntity==null)
+            throw  new GeneralAllException("Invalid subcription type id!!");
+
+        subscriptionEntity.setSubscriptionType(subscriptionTypeEntity);
         subscriptionEntity.setStatus(SubscriptionStatus.PENDING);
 
         String userEmail = SecurityUtil.getCurrentUserLogin().get();
@@ -76,6 +83,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             // Set premium true on user
             UserEntity userEntity = subscriptionEntity.getUser();
             userEntity.setPremium(true);
+            userEntity.setEndDate(endDate);
+            userEntity.setPlanType(subscriptionEntity.getSubscriptionType().getName());
             // Save the user
             userRepository.save(userEntity);
         }

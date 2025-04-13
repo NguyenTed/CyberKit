@@ -19,6 +19,8 @@ public class UserDTO {
     private String name;
     private String email;
     private boolean isPremium;
+    private String endDate;
+    private String planType;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
     private String dateOfBirth;

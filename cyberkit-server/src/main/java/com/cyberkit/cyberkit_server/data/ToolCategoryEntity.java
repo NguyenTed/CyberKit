@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tool_category")
+@Table(name = "tool_categories")
 @Builder
 @Getter
 @Setter

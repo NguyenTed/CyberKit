@@ -29,6 +29,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/subscriptions/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/subscriptions/types").hasAnyRole("ADMIN")
                         .requestMatchers("/api/tools/**","/api/v1/tools/search/**").permitAll()
                         .requestMatchers("/api/bcrypt/hash", "/api/bcrypt/compare", "/api/ascii/text-to-binary", "/api/ascii/binary-to-text").permitAll()
                         .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()
