@@ -21,4 +21,8 @@ public interface ToolRepository extends JpaRepository<ToolEntity, UUID> {
     List<ToolEntity> findNotPremiumEnabledToolsByKeyword(@Param("keyWord") String keyWord);
 
     List<ToolEntity> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
+
+    List<ToolEntity> findByCategoryId(UUID categoryId);
+
+    List<ToolEntity> findByCategoryIdAndEnabledTrue(UUID categoryId);
 }

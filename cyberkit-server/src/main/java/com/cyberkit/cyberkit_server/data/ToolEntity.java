@@ -24,11 +24,15 @@ public class ToolEntity {
     private String name;
 
     private String version;
+
     @Column(columnDefinition = "TEXT")
     private String description;
+
     private String icon;
+
     @Column(name = "enabled")
     private boolean enabled;
+
     @Column(name = "premium")
     private boolean premium;
 
@@ -42,6 +46,6 @@ public class ToolEntity {
     @JoinColumn(name = "category_id")
     private ToolCategoryEntity category;
 
-    @ManyToMany(mappedBy = "tools", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "favouriteTools", fetch = FetchType.LAZY)
     private List<UserEntity> users = new ArrayList<>();
 }

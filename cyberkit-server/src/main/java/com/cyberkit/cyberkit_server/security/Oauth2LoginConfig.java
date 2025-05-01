@@ -20,8 +20,6 @@ public class Oauth2LoginConfig {
     @Value("${spring.security.oauth2.client.registration.github.client-secret}")
     private String githubClientSecret;
 
-
-
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository(){
         return new InMemoryClientRegistrationRepository(github());

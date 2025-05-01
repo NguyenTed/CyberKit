@@ -91,9 +91,11 @@ export default function ToolHost() {
     getToolByIdAPI(toolId)
       .then((res) => {
         const toolData = res.data;
+        console.log(res.data);
         setTool(toolData);
       })
       .catch((err) => {
+        console.log("ERROR!!")
         console.error("❌ Failed to load tool metadata:", err);
         setError("Could not load this tool.");
       });
@@ -115,7 +117,7 @@ export default function ToolHost() {
           <iframe
             src={path}
             name={tool.id}
-            className="w-full h-[600px] mt-6 rounded-lg shadow-md border-0"
+            className="w-full h-[1000px] mt-6 rounded-lg shadow-md border-0"
           />
         </div>
       </div>

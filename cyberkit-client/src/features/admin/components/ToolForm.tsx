@@ -96,7 +96,9 @@ const ToolForm: React.FC<ToolFormProps> = ({
       !icon.startsWith("Io") &&
       !icon.startsWith("Si") &&
       !icon.startsWith("Cg") &&
-      !icon.startsWith("Bs")
+      !icon.startsWith("Bs") &&
+      !icon.startsWith("Im") &&
+      !icon.startsWith("Tb")
     ) {
       errors.icon = "This icon is not supported.";
     }
