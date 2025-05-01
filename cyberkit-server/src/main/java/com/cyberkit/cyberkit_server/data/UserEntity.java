@@ -16,8 +16,6 @@ import java.util.List;
 @Setter
 public class UserEntity extends AbstractUserEntity {
     private boolean isPremium;
-    @Column(columnDefinition = "TEXT")
-    private String refreshToken;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<SubscriptionEntity> subscriptions;
     private Date endDate;
