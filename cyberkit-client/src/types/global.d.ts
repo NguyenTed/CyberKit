@@ -23,6 +23,8 @@ declare global {
         premium: boolean;
         gender: string;
         dateOfBirth: string;
+        endDate: string;
+        planType: string;
     }
     interface IUserLogin{
         accessToken: string;

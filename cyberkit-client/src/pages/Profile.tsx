@@ -38,6 +38,12 @@ const ProfilePage = () => {
             <IdcardOutlined className="mr-2" />
             {userInfo?.role}
           </Descriptions.Item>
+          <Descriptions.Item label="Premium">
+            {userInfo?.premium ? "Yes" : "No"}
+          </Descriptions.Item>
+          <Descriptions.Item label="End date">
+            {userInfo?.endDate}
+          </Descriptions.Item>
         </Descriptions>
  
         <div className="flex justify-center mt-6">

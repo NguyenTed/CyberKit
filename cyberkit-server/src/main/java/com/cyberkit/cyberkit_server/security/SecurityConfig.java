@@ -9,8 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
@@ -27,13 +25,19 @@ public class SecurityConfig {
                         .requestMatchers("/plugins/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").permitAll()
-                        .requestMatchers("/api/tool/**").permitAll()
-                        .requestMatchers("/api/bcrypt/hash", "/api/bcrypt/compare", "/api/ascii/text-to-binary", "/api/ascii/binary-to-text").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/subscriptions/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/subscriptions/types").hasAnyRole("ADMIN")
+                        .requestMatchers("/api/tools/**","/api/v1/tools/search/**").permitAll()
                         .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()
                         .requestMatchers("/api/v1/auth/login","api/v1/auth/signup","api/v1/auth/refresh", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/account").hasAnyRole("ADMIN")
+                        .requestMatchers("/api/v1/users","/api/v1/users/**").hasAnyRole("USER")
+                        .requestMatchers("/api/v1/categories").permitAll()
+                        .requestMatchers("/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/favourites/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

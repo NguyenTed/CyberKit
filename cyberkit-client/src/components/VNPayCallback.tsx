@@ -50,7 +50,7 @@ const VnpayCallback: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Spin size="large" />
-        <p className="mt-4">Đang kiểm tra giao dịch...</p>
+        <p className="mt-4">Checking Transaction...</p>
       </div>
     );
   }
@@ -60,11 +60,11 @@ const VnpayCallback: React.FC = () => {
       {status === "success" ? (
         <Result
           status="success"
-          title="Thanh toán thành công!"
-          subTitle="Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi."
+          title="Payment successfully!"
+          subTitle="Thanks for using my service."
           extra={
             <Button type="primary" onClick={() => navigate("/")}>
-              Về trang chủ
+              Back to Home
             </Button>
           }
         />
@@ -75,7 +75,7 @@ const VnpayCallback: React.FC = () => {
           subTitle="Please check your credit card!"
           extra={
             <Button type="primary" onClick={() => navigate("/pricing")}>
-              Thử lại
+              Try again
             </Button>
           }
         />

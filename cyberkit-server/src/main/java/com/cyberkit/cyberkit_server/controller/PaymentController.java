@@ -1,8 +1,8 @@
 package com.cyberkit.cyberkit_server.controller;
 
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
-import com.cyberkit.cyberkit_server.enums.SubscriptionType;
 import com.cyberkit.cyberkit_server.service.SubscriptionService;
+import com.cyberkit.cyberkit_server.service.SubscriptionTypeService;
 import com.cyberkit.cyberkit_server.vnpay.VNPayService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,20 +16,17 @@ public class PaymentController {
 
     private final VNPayService vnPayService;
     private final SubscriptionService subscriptionService;
+    private final SubscriptionTypeService subscriptionTypeService;
 
-    public PaymentController(VNPayService vnPayService, SubscriptionService subscriptionService) {
+    public PaymentController(VNPayService vnPayService, SubscriptionService subscriptionService, SubscriptionTypeService subscriptionTypeService) {
         this.vnPayService = vnPayService;
         this.subscriptionService = subscriptionService;
+        this.subscriptionTypeService = subscriptionTypeService;
     }
-    @GetMapping("/vnpay/url/{type}")
-    public ResponseEntity<RestResponse> getVNPayUrl(@PathVariable("type") String subscriptionType){
-        Long createdSubscriptionId= subscriptionService.createSubscription(subscriptionType);
-        String VNPayUrl = vnPayService.generatePaymentUrl(subscriptionType,createdSubscriptionId);
+    @GetMapping("/vnpay/url/{id}")
+    public ResponseEntity<RestResponse> getVNPayUrl(@PathVariable("id") Long subscriptionTypeId){
+        Long createdSubscriptionId= subscriptionService.createSubscription(subscriptionTypeId);
+        String VNPayUrl = vnPayService.generatePaymentUrl(subscriptionTypeService.getPriceFromSubscriptionType(subscriptionTypeId),createdSubscriptionId);
         return ResponseEntity.ok(new RestResponse<>(200,"","",VNPayUrl));
     }
-    @GetMapping("/type")
-    public ResponseEntity<RestResponse> getPlanTypes(){
-        return ResponseEntity.ok(new RestResponse(200,"","", SubscriptionType.values()));
-    }
-
 }

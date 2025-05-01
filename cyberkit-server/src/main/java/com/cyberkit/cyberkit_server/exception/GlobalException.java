@@ -57,7 +57,7 @@ public class GlobalException {
         res.setStatusCode(HttpStatus.UNAUTHORIZED.value());
         res.setMessage(exception.getMessage());
         res.setData("");
-        return ResponseEntity.badRequest().body(res);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
     }
 
 }

@@ -98,9 +98,10 @@ public class ToolController {
         return toolService.executeTool(toolId, action, new HashMap<>());
     }
 
-
     @PostMapping("/execute/{toolId}/{action}")
     public Map<String, Object> executeToolPOSTMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        System.out.println("Received body: " + body);
+        System.out.println("Received action: " + action);
         return toolService.executeTool(toolId, action, body);
     }
 
@@ -178,5 +179,10 @@ public class ToolController {
                 .contentLength(resource.contentLength())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
+    }
+
+    @GetMapping("/search/{keyWord}")
+    public ResponseEntity<RestResponse> searchTools(@PathVariable("keyWord") String keyWord){
+        return ResponseEntity.ok(new RestResponse<>(200,"","",toolService.searchTools(keyWord)));
     }
 }

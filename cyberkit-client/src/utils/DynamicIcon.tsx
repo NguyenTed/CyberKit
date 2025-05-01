@@ -8,6 +8,8 @@ import * as SiIcons from "react-icons/si";
 import * as CgIcons from "react-icons/cg";
 import * as LuIcons from "react-icons/lu";
 import * as BsIcons from "react-icons/bs";
+import * as ImIcons from "react-icons/im";
+import * as TbIcons from "react-icons/tb";
 
 type IconPack =
   | typeof FaIcons
@@ -19,7 +21,9 @@ type IconPack =
   | typeof SiIcons
   | typeof CgIcons
   | typeof LuIcons
-  | typeof BsIcons;
+  | typeof BsIcons
+  | typeof ImIcons
+  | typeof TbIcons;
 
 const iconPacks: Record<string, IconPack> = {
   fa: FaIcons,
@@ -32,6 +36,8 @@ const iconPacks: Record<string, IconPack> = {
   cg: CgIcons,
   lu: LuIcons,
   bs: BsIcons,
+  im: ImIcons,
+  tb: TbIcons,
 };
 
 interface DynamicIconProps {
@@ -50,7 +56,6 @@ export const getValidIcon = (name: string): boolean => {
 const DynamicIcon: React.FC<DynamicIconProps> = ({
   name,
   size,
-  color,
   className = "",
 }) => {
   const packKey = name.slice(0, 2).toLowerCase();
@@ -59,13 +64,12 @@ const DynamicIcon: React.FC<DynamicIconProps> = ({
     name as keyof typeof IconPack
   ] as React.ComponentType<{
     size?: number;
-    color?: string;
     className?: string;
   }>;
 
   if (!IconComponent) return <span className={className}></span>;
 
-  return <IconComponent size={size} color={color} className={className} />;
+  return <IconComponent size={size} className={className} />;
 };
 
 export default DynamicIcon;
