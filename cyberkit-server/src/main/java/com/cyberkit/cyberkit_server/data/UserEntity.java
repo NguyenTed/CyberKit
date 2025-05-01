@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name="users")
@@ -16,15 +14,19 @@ import java.util.List;
 @Setter
 public class UserEntity extends AbstractUserEntity {
     private boolean isPremium;
+
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<SubscriptionEntity> subscriptions;
     private Date endDate;
     private String planType;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_favourite_tool",
             joinColumns = @JoinColumn(name = "user_id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "tool_id", nullable = false))
-    private List<ToolEntity> tools = new ArrayList<>();
+    private Set<ToolEntity> favouriteTools = new HashSet<>();
+
 }

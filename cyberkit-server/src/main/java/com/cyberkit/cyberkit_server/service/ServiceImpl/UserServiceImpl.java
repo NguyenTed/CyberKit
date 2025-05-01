@@ -1,10 +1,7 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
 import com.cyberkit.cyberkit_server.data.*;
-import com.cyberkit.cyberkit_server.dto.UserDTO;
-import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
-import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
 import com.cyberkit.cyberkit_server.exception.GeneralAllException;
 import com.cyberkit.cyberkit_server.exception.UnauthorizedPermissionException;
@@ -16,32 +13,20 @@ import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.UserService;
 import com.cyberkit.cyberkit_server.util.SecurityUtil;
 import jakarta.transaction.Transactional;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
-public class UserServiceImpl implements UserService {
+@RequiredArgsConstructor
 
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final ToolRepository toolRepository;
     private final AccountRepository accountRepository;
     private final ToolMapper toolMapper;
-    public UserServiceImpl(UserRepository userRepository, SubscriptionRepository subscriptionRepository, ToolRepository toolRepository, AccountRepository accountRepository, ToolMapper toolMapper) {
-        this.userRepository = userRepository;
-        this.subscriptionRepository = subscriptionRepository;
-        this.toolRepository = toolRepository;
-        this.accountRepository = accountRepository;
-        this.toolMapper = toolMapper;
-    }
-
 
     @Override
     public Boolean checkValidSubscription(Date endDate, Long userId) {
@@ -68,43 +53,62 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void likeTool(String toolId) {
-        Optional<ToolEntity> optionalToolEntity = toolRepository.findById(UUID.fromString(toolId));
-        if(optionalToolEntity.isEmpty()) throw  new GeneralAllException("Invalid toolId!");
-        ToolEntity toolEntity = optionalToolEntity.get();
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
-                SecurityUtil.getCurrentUserLogin().get():"";
-        AccountEntity accountEntity = accountRepository.findByEmail(email);
-        UserEntity userEntity = null;
-        if(accountEntity.getUser() instanceof UserEntity){
-            userEntity =(UserEntity) accountEntity.getUser();
-        }
-        if(userEntity==null) throw  new GeneralAllException("Invalid Email!");
-        if(!userRepository.existsByIdAndToolsId(userEntity.getId(),UUID.fromString(toolId))){
-            List<ToolEntity> toolEntities = userEntity.getTools();
-            toolEntities.add(toolEntity);
-            userRepository.save(userEntity);
-        }
-        else{
-            userRepository.removeToolFromFavoritesNative(userEntity.getId(),UUID.fromString(toolId));
-        }
-
+    public void addToolToFavoriteTool(String toolId) {
+        System.out.println("Add to favorites: " + toolId);
+        updateFavouriteTool(toolId, true);
     }
 
+    @Transactional
+    @Override
+    public void removeToolFromFavoriteTool(String toolId) {
+        System.out.println("Remove from favorites: " + toolId);
+        updateFavouriteTool(toolId, false);
+    }
+
+    private void updateFavouriteTool(String toolId, boolean shouldAdd) {
+        UUID toolUUID = UUID.fromString(toolId);
+        ToolEntity toolEntity = toolRepository.findById(toolUUID)
+                .orElseThrow(() -> new GeneralAllException("Invalid toolId!"));
+
+        String email = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new GeneralAllException("User not authenticated!"));
+
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        UserEntity userEntity = (UserEntity) accountEntity.getUser();
+
+        if (userEntity == null)
+            throw new GeneralAllException("Invalid user!");
+
+        if (!userRepository.existsByIdAndFavouriteToolsId(userEntity.getId(), toolUUID)) {
+            if (shouldAdd) {
+                userEntity.getFavouriteTools().add(toolEntity);
+            } else {
+                throw new GeneralAllException("Tool is not in favorites!");
+            }
+        } else if (userRepository.existsByIdAndFavouriteToolsId(userEntity.getId(), toolUUID)) {
+            if (!shouldAdd) {
+                userEntity.getFavouriteTools().remove(toolEntity);
+            } else {
+                throw new GeneralAllException("Tool is already in favorites!");
+            }
+        }
+
+        userRepository.save(userEntity);
+    }
 
     @Override
-    public List<ToolResponse> getFavouriteTools() {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
-                SecurityUtil.getCurrentUserLogin().get():"";
-        AccountEntity accountEntity = accountRepository.findByEmail(email);
-        UserEntity userEntity = null;
-        if(accountEntity.getUser() instanceof UserEntity){
-            userEntity =(UserEntity) accountEntity.getUser();
-        }
-        if(userEntity==null) throw  new GeneralAllException("Invalid Email!");
-        List<ToolEntity> toolEntities = userEntity.getTools();
-        return toolEntities.stream().map(toolMapper::toToolResponse).toList();
+    public List<ToolResponse> getMyFavoriteTools() {
+        String email = SecurityUtil.getCurrentUserLogin()
+                .orElseThrow(() -> new GeneralAllException("User not authenticated!"));
 
+        AccountEntity accountEntity = accountRepository.findByEmail(email);
+        UserEntity userEntity = (UserEntity) accountEntity.getUser();
+
+        if (userEntity == null)
+            throw new GeneralAllException("Invalid user!");
+
+        Set<ToolEntity> toolEntities = userEntity.getFavouriteTools();
+        return toolEntities.stream().map(toolMapper::toToolResponse).toList();
     }
 
     @Override
@@ -122,7 +126,7 @@ public class UserServiceImpl implements UserService {
             if(endDate.after(now)) return true;
         }
         else{
-            throw  new UnauthorizedPermissionException("Not applying for Admin!!");
+            throw new UnauthorizedPermissionException("Not applying for Admin!!");
         }
         return false;
     }
