@@ -56,7 +56,7 @@ public class AccountServiceImpl implements AccountService {
         // Create UserEntity
         UserEntity userEntity = modelMapper.map(registerDTO,UserEntity.class);
         userEntity.setPremium(false);
-        userEntity.setRefreshToken(null);
+
 
         // Create Account Entity
         AccountEntity account= new AccountEntity();

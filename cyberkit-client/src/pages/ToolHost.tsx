@@ -91,9 +91,11 @@ export default function ToolHost() {
     getToolByIdAPI(toolId)
       .then((res) => {
         const toolData = res.data;
+        console.log(res.data);
         setTool(toolData);
       })
       .catch((err) => {
+        console.log("ERROR!!")
         console.error("❌ Failed to load tool metadata:", err);
         setError("Could not load this tool.");
       });
