@@ -11,6 +11,7 @@ type ToolCardProps = {
   name: string;
   description: string;
   icon?: string;
+  isPremium?: boolean;
   isFavorite: boolean;
 };
 
