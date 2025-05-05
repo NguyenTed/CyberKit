@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/plugins/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
-                        .requestMatchers(HttpMethod.GET, "/api/v1/tools").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,"/api/v1/subscriptions/**").permitAll()
@@ -37,7 +37,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/categories").permitAll()
                         .requestMatchers("/api/v1/categories/**").permitAll()
                         .requestMatchers("/api/v1/favourites/**").permitAll()
-
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

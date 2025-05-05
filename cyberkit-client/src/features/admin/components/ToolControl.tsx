@@ -18,7 +18,7 @@ const ToolControl: React.FC<ToolControlProps> = ({ value, onChange }) => {
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Search plugins..."
+            placeholder="Search tools..."
             className="w-full pl-10 pr-10 py-3 rounded-xl border border-[#f3f4f6] focus:ring-2 focus:ring-blue-500 bg-gray-100 outline-none transition"
           />
           <FiSearch

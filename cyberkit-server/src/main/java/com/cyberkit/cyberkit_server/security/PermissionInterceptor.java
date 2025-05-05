@@ -52,7 +52,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return true;
         }
 
-
         String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
                 SecurityUtil.getCurrentUserLogin().get():"";
         UserDTO userDTO = null;

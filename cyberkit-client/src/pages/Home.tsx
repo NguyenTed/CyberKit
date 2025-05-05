@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import CategoryMenu from "../components/landing/CategoryMenu";
 import Hero from "../components/landing/Hero";
-import ToolSection from "../components/ToolSection";
 import {
   ToolCategory,
   getToolsByCategoryAPI,
   getToolCategoriesAPI,
 } from "../services/toolCategoryService";
 import { Tool } from "../services/toolService";
+import AllToolSection from "../components/landing/AllToolSection";
+import FavoriteToolSection from "../components/landing/FavoriteToolSection";
 
 const Home: React.FC = () => {
   const [categories, setCategories] = useState<ToolCategory[]>([]);
@@ -37,6 +37,7 @@ const Home: React.FC = () => {
       ...prev,
       [categoryId]: response.data,
     }));
+    console.log("Fetched tool by categories: ", response.data);
   };
 
   useEffect(() => {
@@ -46,8 +47,7 @@ const Home: React.FC = () => {
   }, [activeTab]);
 
   return (
-    <div>
-      <div className="py-3"></div>
+    <>
       <Hero
         title="CyberKit"
         subtitle="The all-in-one toolbox for developers, sysadmins, and IT pros."
@@ -55,26 +55,9 @@ const Home: React.FC = () => {
         buttonLink="/signup"
         imageSrc="https://i.pinimg.com/736x/7e/05/8d/7e058d01d8ee1303f1eeb7d92a7b3c0c.jpg"
       />
-      <h1 className="text-2xl font-bold text-center mt-8">
-        What can we help you with?
-      </h1>
-      <CategoryMenu
-        tabs={categories.map((cat) => ({
-          id: cat.id,
-          label: cat.name,
-          icon: cat.icon,
-        }))}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
-      <ToolSection
-        name={categories.find((c) => c.id === activeTab)?.name || ""}
-        description={`Tools in ${
-          categories.find((c) => c.id === activeTab)?.name || ""
-        }`}
-        tools={toolsByCategory[activeTab] || []}
-      />
-    </div>
+      <FavoriteToolSection />
+      <AllToolSection />
+    </>
   );
 };
 
