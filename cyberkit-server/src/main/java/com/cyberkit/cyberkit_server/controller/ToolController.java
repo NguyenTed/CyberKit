@@ -10,6 +10,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,12 +30,14 @@ public class ToolController {
     private final ToolService toolService;
 
     @GetMapping
-    public RestResponse<List<ToolResponse>> getAllTools() {
-        log.info("ToolController.getAllTools");
-        var tools = toolService.getAllTools();
-        for (ToolResponse tool : tools) {
-            log.info(String.valueOf(tool.isPremium()));
-        }
+    public RestResponse<List<ToolResponse>> getTools(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(value = "premium", required = false) Boolean premium,
+            @RequestParam(value = "enabled", required = false) Boolean enabled,
+            @RequestParam(value = "category", required = false) UUID categoryId
+    ) {
+        log.info("ToolController.getTools with filters - premium: {}, enabled: {}, category: {}", premium, enabled, categoryId);
+        List<ToolResponse> tools = toolService.getToolsFiltered(jwt, premium, enabled, categoryId);
         return RestResponse.<List<ToolResponse>>builder()
                 .data(tools)
                 .build();

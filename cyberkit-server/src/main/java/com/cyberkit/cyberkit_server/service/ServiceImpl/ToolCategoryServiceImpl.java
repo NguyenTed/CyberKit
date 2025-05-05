@@ -9,6 +9,7 @@ import com.cyberkit.cyberkit_server.repository.ToolCategoryRepository;
 import com.cyberkit.cyberkit_server.repository.ToolRepository;
 import com.cyberkit.cyberkit_server.service.ToolCategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,10 +28,16 @@ public class ToolCategoryServiceImpl implements ToolCategoryService {
         return toolCategoryRepository.findAll().stream().map(toolCategoryMapper::toToolCategoryResponse).toList();
     }
 
-    @Override
-    public List<ToolResponse> getToolsByCategory(String categoryId) {
-        System.out.println("🔍 Looking for tools in category ID: " + categoryId);
-        List<ToolEntity> tools = toolRepository.findByCategoryIdAndEnabledTrue(UUID.fromString(categoryId));
-        return tools.stream().map(toolMapper::toToolResponse).toList();
+    public List<ToolResponse> getToolsByCategoryFiltered(UUID categoryId, Jwt jwt) {
+        boolean isAdmin = jwt != null &&
+                jwt.getClaimAsStringList("authorities").contains("ROLE_ADMIN");
+
+        List<ToolEntity> tools = isAdmin
+                ? toolRepository.findByCategoryId(categoryId)
+                : toolRepository.findByCategoryIdAndEnabledTrue(categoryId);
+
+        return tools.stream()
+                .map(toolMapper::toToolResponse)
+                .toList();
     }
 }

@@ -25,4 +25,6 @@ public interface ToolRepository extends JpaRepository<ToolEntity, UUID> {
     List<ToolEntity> findByCategoryId(UUID categoryId);
 
     List<ToolEntity> findByCategoryIdAndEnabledTrue(UUID categoryId);
+
+    List<ToolEntity> findAllByEnabled(boolean enabled);
 }

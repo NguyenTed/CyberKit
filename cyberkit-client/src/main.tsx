@@ -5,7 +5,6 @@ import App from "./App.tsx";
 import Home from "./pages/Home";
 import { AppProvider } from "./components/context/AuthContext.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import NavBar from "./layouts/NavBar.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import AdminPanel from "./features/admin/pages/AdminPanel.tsx";
 import NewToolPage from "./features/admin/pages/NewToolPage.tsx";
@@ -19,54 +18,37 @@ import ForbiddenPage from "./pages/Forbidden.tsx";
 import AdminRoute from "./features/admin/components/AdminRoute.tsx";
 import PricingPage from "./pages/Pricing.tsx";
 import PricingAdminPage from "./features/admin/pages/PricingAdmin.tsx";
+import MainLayout from "./layouts/MainLayout.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <NavBar />,
+    element: <MainLayout />,
     children: [
       {
-        index: true, // This makes IntroPage the default route for "/"
+        index: true,
         element: <Home />,
       },
       {
-        path: "/profile",
+        path: "/tools/:toolId",
+        element: <ToolHost />,
+      },
+      {
+        path: "profile",
         element: <ProfilePage />,
       },
       {
-        path: "/403",
+        path: "403",
         element: <ForbiddenPage />,
       },
       {
-        element: <AdminRoute />,
-        children: [
-          {
-            path: "/admin",
-            element: <AdminPanel />,
-          },
-          {
-            path: "/admin/tools/new",
-            element: <NewToolPage />,
-          },
-          {
-            path: "/admin/tools/update/:id",
-            element: <UpdateToolPage />,
-          },
-        ],
-      },
-      {
-        path: "/pricing",
+        path: "pricing",
         element: <PricingPage />,
       },
       {
-        path: "/admin/pricing",
-        element: <PricingAdminPage />,
+        element: <AdminRoute />,
       },
     ],
-  },
-  {
-    path: "/tools/:toolId",
-    element: <ToolHost />,
   },
   {
     path: "/payment/vnpay/callback",
@@ -76,7 +58,6 @@ const router = createBrowserRouter([
     path: "/oauth2/github/callback",
     element: <GitHubOAuthCallback />,
   },
-
   {
     path: "/login",
     element: <LoginPage />,
@@ -84,6 +65,16 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignupPage />,
+  },
+  {
+    path: "admin",
+    element: <MainLayout />, // 👈 apply AdminLayout here
+    children: [
+      { index: true, element: <AdminPanel /> },
+      { path: "tools/new", element: <NewToolPage /> },
+      { path: "tools/update/:id", element: <UpdateToolPage /> },
+      { path: "pricing", element: <PricingAdminPage /> },
+    ],
   },
 ]);
 

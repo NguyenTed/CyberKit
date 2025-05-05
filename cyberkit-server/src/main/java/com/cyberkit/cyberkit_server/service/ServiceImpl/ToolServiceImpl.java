@@ -18,6 +18,7 @@ import com.cyberkit.pluginservice.PluginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,9 +55,17 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public List<ToolResponse> getAllTools() {
-        var tools = toolRepository.findAll();
-        return tools.stream().map(toolMapper::toToolResponse).toList();
+    public List<ToolResponse> getToolsFiltered(Jwt jwt, Boolean premium, Boolean enabled, UUID categoryId) {
+        boolean isAdmin = jwt != null &&
+                jwt.getClaimAsStringList("authorities").contains("ROLE_ADMIN");
+
+        List<ToolEntity> tools = isAdmin
+                ? toolRepository.findAll()
+                : toolRepository.findAllByEnabled(true);
+
+        return tools.stream()
+                .map(toolMapper::toToolResponse)
+                .toList();
     }
 
     @Override

@@ -1,17 +1,15 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  addToolToFavorites,
-  removeToolFromFavorites,
-} from "../services/userService";
 import DynamicIcon from "../utils/DynamicIcon";
+import { useCurrentApp } from "./context/AuthContext";
 
 type ToolCardProps = {
   id: string;
   name: string;
   description: string;
   icon?: string;
+  premium?: boolean;
   isFavorite: boolean;
+  onFavoriteToggle?: () => void;
 };
 
 const ToolCard: React.FC<ToolCardProps> = ({
@@ -19,34 +17,27 @@ const ToolCard: React.FC<ToolCardProps> = ({
   name,
   description,
   icon,
-  isFavorite: initialIsFavorite,
+  premium,
+  isFavorite = false,
+  onFavoriteToggle,
 }) => {
   const navigate = useNavigate();
-  const [isFavourite, setIsFavourite] = useState(initialIsFavorite);
+  const { isAuthenticated } = useCurrentApp();
 
-  console.log(`${name} isFavourite:`, isFavourite);
-
-  const handleToggleFavourite = async (
-    e: React.MouseEvent<HTMLSpanElement, MouseEvent>
-  ) => {
-    e.stopPropagation(); // 🛑 Prevent navigation
-
-    try {
-      if (isFavourite) {
-        await removeToolFromFavorites(id);
-        setIsFavourite(false);
-      } else {
-        await addToolToFavorites(id);
-        setIsFavourite(true);
-      }
-    } catch (error) {
-      console.error("❌ Failed to toggle favourite", error);
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent card click
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
     }
+    onFavoriteToggle?.(); // this calls toggleFavorite from the parent
   };
 
   return (
     <div
-      className="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:border-navy-700 hover:ring-2 hover:ring-blue-600 hover:shadow-lg transition cursor-pointer"
+      className={`bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:border-navy-700 hover:ring-2 ${
+        premium ? "hover:ring-yellow-600" : "hover:ring-blue-600"
+      } hover:shadow-lg transition cursor-pointer`}
       onClick={() => navigate(`/tools/${id}`)}
     >
       <div className="flex justify-between items-start">
@@ -57,11 +48,11 @@ const ToolCard: React.FC<ToolCardProps> = ({
           />
         </span>
 
-        <span onClick={handleToggleFavourite}>
+        <span onClick={handleFavoriteClick}>
           <DynamicIcon
             name="FaHeart"
             className={`text-2xl transition ${
-              isFavourite ? "text-red-500" : "text-gray-300 hover:text-red-500"
+              isFavorite ? "text-red-500" : "text-gray-300 hover:text-red-500"
             }`}
           />
         </span>
