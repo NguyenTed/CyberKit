@@ -15,14 +15,17 @@ import com.cyberkit.cyberkit_server.service.ToolService;
 import com.cyberkit.cyberkit_server.util.SecurityUtil;
 import com.cyberkit.cyberkit_server.util.StringUtil;
 import com.cyberkit.pluginservice.PluginService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -34,6 +37,7 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -87,7 +91,7 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception {
+    public void uploadTool(MultipartFile combinedZip, ToolUploadRequest request) throws Exception {
         ToolEntity tool = ToolEntity.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -95,7 +99,8 @@ public class ToolServiceImpl implements ToolService {
                 .icon(request.getIcon())
                 .premium(false)
                 .enabled(false)
-                .category(toolCategoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Tool category not found")))
+                .category(toolCategoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Tool category not found")))
                 .backendPath("")
                 .frontendPath("")
                 .build();
@@ -103,28 +108,76 @@ public class ToolServiceImpl implements ToolService {
         toolRepository.save(tool);
         String toolId = String.valueOf(tool.getId());
 
-        // Define base paths
+        // Define final storage paths
         Path pluginRootDir = Paths.get("tools", toolId);
         Path backendDir = pluginRootDir.resolve("backend");
         Path frontendDir = pluginRootDir.resolve("frontend");
+        Files.createDirectories(pluginRootDir);
 
-        // 1. Save backend jar to /tools/{pluginId}/backend/{pluginId}.jar
+        // 1. Unzip to a temp directory
+        Path tempDir = Files.createTempDirectory("tool-upload");
+        unzip(combinedZip, tempDir);
+
+        // 2. Validate structure
+        Path rootDir = Files.list(tempDir)
+                .filter(Files::isDirectory)
+                .findFirst()
+                .orElseThrow(() -> new IOException("No root folder found in ZIP"));
+
+        Path backendSourceDir = rootDir.resolve("tool-backend");
+        Path frontendSourceDir = rootDir.resolve("tool-frontend");
+
+        // 3. Move backend jar to final location
         Files.createDirectories(backendDir);
-        Path jarPath = backendDir.resolve(toolId + ".jar");
-        Files.copy(backendJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
+        Path jarFile = Files.list(backendSourceDir)
+                .filter(f -> f.toString().endsWith(".jar"))
+                .findFirst()
+                .orElseThrow(() -> new IOException("No .jar file found in tool-backend/"));
 
-        // 2. Extract frontend zip to /tools/{pluginId}/frontend/
-        extractFrontendZip(frontendZip, frontendDir);
+        Path targetJarPath = backendDir.resolve(toolId + ".jar");
+        Files.copy(jarFile, targetJarPath, StandardCopyOption.REPLACE_EXISTING);
 
-        PluginWrapper wrapper = pluginManager.loadPlugin(jarPath, toolId);
-        PluginClassLoader classLoader = wrapper.getClassLoader();
+        // 4. Move frontend files to final location
+        Files.createDirectories(frontendDir);
+        FileSystemUtils.copyRecursively(frontendSourceDir, frontendDir);
 
-        loadAndRegisterPluginService(toolId, jarPath, classLoader);
+        // 5. Load plugin
+        PluginWrapper wrapper = pluginManager.loadPlugin(targetJarPath, toolId);
+        loadAndRegisterPluginService(toolId, targetJarPath, wrapper.getClassLoader());
 
-        // 5. Save metadata
-        tool.setBackendPath(jarPath.toString());
+        // 6. Save updated paths to DB
+        tool.setBackendPath(targetJarPath.toString());
         tool.setFrontendPath("/plugins/" + toolId + "/frontend/index.html");
         toolRepository.save(tool);
+
+        // 7. Clean up
+        FileSystemUtils.deleteRecursively(tempDir);
+    }
+
+    private void unzip(MultipartFile zipFile, Path targetDir) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(zipFile.getInputStream())) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String entryName = entry.getName();
+
+                // 🚫 Skip macOS metadata
+                if (entryName.startsWith("__MACOSX") || entryName.endsWith(".DS_Store")) {
+                    continue;
+                }
+
+                Path newPath = targetDir.resolve(entryName).normalize();
+                if (!newPath.startsWith(targetDir)) {
+                    throw new IOException("Invalid zip entry: " + entryName);
+                }
+
+                if (entry.isDirectory()) {
+                    Files.createDirectories(newPath);
+                } else {
+                    Files.createDirectories(newPath.getParent());
+                    Files.copy(zis, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
     }
 
     private void extractFrontendZip (MultipartFile frontendZip, Path frontendDir) throws IOException {
@@ -226,22 +279,26 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
+    @Transactional
     public void deleteTool(String toolId) throws IOException {
-        ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
+        UUID id = UUID.fromString(toolId);
+        ToolEntity tool = toolRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
 
-        String toolName = tool.getName();
+        // 🔥 Clear favorite references
+        tool.getUsers().forEach(user -> user.getFavouriteTools().remove(tool));
+        tool.getUsers().clear(); // Optional, but helps GC and avoids accidental flush
+
+        toolRepository.save(tool); // Needed to flush relationship changes
 
         pluginManager.unloadPlugin(toolId);
 
         Path pluginRoot = Paths.get("tools", toolId);
         if (Files.exists(pluginRoot)) {
             FileUtils.deleteDirectory(pluginRoot.toFile());
-            log.info("Deleted plugin files: {}", pluginRoot);
         }
 
         toolRepository.delete(tool);
-        log.info("Plugin deleted successfully: {}", toolName);
     }
 
     private Class<?> findPluginServiceImpl(Path jarPath, PluginClassLoader classLoader) throws IOException, ClassNotFoundException {

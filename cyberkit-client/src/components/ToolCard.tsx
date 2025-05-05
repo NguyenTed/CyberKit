@@ -30,35 +30,53 @@ const ToolCard: React.FC<ToolCardProps> = ({
       navigate("/login");
       return;
     }
-    onFavoriteToggle?.(); // this calls toggleFavorite from the parent
+    onFavoriteToggle?.();
   };
 
   return (
     <div
-      className={`bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:border-navy-700 hover:ring-2 ${
-        premium ? "hover:ring-yellow-600" : "hover:ring-blue-600"
-      } hover:shadow-lg transition cursor-pointer`}
+      className={`relative bg-white p-5 rounded-xl border transition cursor-pointer 
+        ${
+          premium
+            ? "border-yellow-400 ring-1 ring-yellow-300 bg-gradient-to-br from-yellow-50 to-white"
+            : "border-gray-200 hover:ring-2 hover:ring-blue-500"
+        } 
+        hover:shadow-md group`}
       onClick={() => navigate(`/tools/${id}`)}
     >
+      {/* Header: Icon + Favorite */}
       <div className="flex justify-between items-start">
-        <span className="text-gray-600 text-2xl">
+        <span className="text-2xl text-gray-600">
           <DynamicIcon
             name={icon ?? "FaRandom"}
-            className="text-gray-500 cursor-pointer transition"
+            className={`transition ${
+              premium
+                ? "text-yellow-500"
+                : "text-gray-500 group-hover:text-blue-500"
+            }`}
           />
         </span>
 
         <span onClick={handleFavoriteClick}>
           <DynamicIcon
             name="FaHeart"
-            className={`text-2xl transition ${
+            className={`text-2xl transition cursor-pointer ${
               isFavorite ? "text-red-500" : "text-gray-300 hover:text-red-500"
-            }`}
+            } cursor-pointer`}
           />
         </span>
       </div>
-      <h3 className="text-lg font-bold mt-2">{name}</h3>
-      <p className="text-gray-600 text-sm mt-1">{description}</p>
+
+      {/* Title with optional crown */}
+      <h3 className="text-lg font-bold mt-4 text-gray-900 flex items-center gap-2">
+        {premium && (
+          <DynamicIcon name="FaCrown" className="text-yellow-500 text-sm" />
+        )}
+        {name}
+      </h3>
+
+      {/* Description */}
+      <p className="text-gray-600 text-sm mt-2 line-clamp-3">{description}</p>
     </div>
   );
 };

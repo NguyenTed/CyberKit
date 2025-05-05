@@ -15,7 +15,7 @@ public interface ToolService {
     List<ToolResponse> getToolsFiltered(Jwt jwt, Boolean premium, Boolean enabled, UUID categoryId);
     void togglePremiumTool(String id);
     void toggleEnabledTool(String id);
-    void uploadTool(MultipartFile backendJar, MultipartFile frontendZip, ToolUploadRequest request) throws Exception;
+    void uploadTool(MultipartFile combinedZip, ToolUploadRequest request) throws Exception;
     Map<String, Object> executeTool (String toolId, String action, Map<String, Object> input) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException;
     void updateTool(String toolId, ToolUploadRequest request, MultipartFile newJar, MultipartFile newFrontendZip) throws Exception;
     void deleteTool(String toolId) throws IOException;

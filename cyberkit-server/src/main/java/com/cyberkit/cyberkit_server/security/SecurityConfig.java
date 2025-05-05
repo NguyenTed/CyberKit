@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/categories").permitAll()
                         .requestMatchers("/api/v1/categories/**").permitAll()
                         .requestMatchers("/api/v1/favourites/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/execute/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools/execute/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

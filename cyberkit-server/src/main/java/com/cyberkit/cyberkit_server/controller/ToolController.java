@@ -66,35 +66,12 @@ public class ToolController {
     }
 
     @PostMapping
-    public RestResponse<Void> uploadTool(
-            @RequestParam("backend") MultipartFile backend,
-            @RequestParam("frontend") MultipartFile frontend,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("version") String version,
-            @RequestParam("icon") String icon,
-            @RequestParam("category") UUID categoryId
-    ) {
-        log.info("ToolController.upload");
-        ToolUploadRequest request = new ToolUploadRequest();
-        request.setName(name);
-        request.setDescription(description);
-        request.setVersion(version);
-        request.setIcon(icon);
-        request.setCategoryId(categoryId);
-
-        try {
-            toolService.uploadTool(backend, frontend, request);
-            return RestResponse.<Void>builder()
-                    .statusCode(200)
-                    .message("Upload successfully")
-                    .build();
-        } catch (Exception e) {
-            return RestResponse.<Void>builder()
-                    .statusCode(500)
-                    .error("Upload failed" + e.getMessage())
-                    .build();
-        }
+    public ResponseEntity<String> uploadTool(
+            @RequestParam("file") MultipartFile combinedZip,
+            @ModelAttribute ToolUploadRequest request
+    ) throws Exception {
+        toolService.uploadTool(combinedZip, request);
+        return ResponseEntity.ok("Uploaded successfully");
     }
 
     @GetMapping("/execute/{toolId}/{action}")

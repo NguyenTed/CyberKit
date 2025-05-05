@@ -94,7 +94,11 @@ const Sidebar = () => {
                     <button
                       key={tool.id}
                       onClick={() => navigate(`/tools/${tool.id}`)}
-                      className="flex items-center gap-2 px-2 py-1 rounded-md text-zinc-600 hover:bg-zinc-100 hover:text-blue-600 transition-all truncate cursor-pointer"
+                      className={`flex items-center gap-2 px-2 py-1 rounded-md text-zinc-600 hover:bg-zinc-100 ${
+                        tool.premium
+                          ? "hover:text-yellow-400"
+                          : "hover:text-blue-600"
+                      }  transition-all truncate cursor-pointer`}
                     >
                       <span className="text-base">
                         <DynamicIcon name={tool.icon ?? "FaRandom"} />

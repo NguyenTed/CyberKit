@@ -10,7 +10,7 @@ import {
   ToolCategory,
 } from "../../../services/toolCategoryService";
 
-type ToolFormProps = {
+type NewToolFormProps = {
   initialValues?: {
     name: string;
     category: string;
@@ -22,7 +22,7 @@ type ToolFormProps = {
   onSubmit: (formData: FormData) => Promise<void>;
 };
 
-const ToolForm: React.FC<ToolFormProps> = ({
+const NewToolForm: React.FC<NewToolFormProps> = ({
   initialValues,
   mode,
   onSubmit,
@@ -34,8 +34,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
   const [description, setDescription] = useState(
     initialValues?.description ?? ""
   );
-  const [backendFile, setBackendFile] = useState<File | null>(null);
-  const [frontendFile, setFrontendFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<ToolCategory[]>([]);
 
@@ -104,10 +103,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
     }
     if (!description.trim()) errors.description = "Description is required.";
 
-    if (mode === "create") {
-      if (!backendFile) errors.backend = "Please upload a backend file.";
-      if (!frontendFile) errors.frontend = "Please upload a frontend file.";
-    }
+    if (!file) errors.file = "Please upload a zip file.";
 
     setFormErrors(errors);
 
@@ -122,8 +118,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
     formData.append("version", version);
     formData.append("icon", icon);
     formData.append("description", description);
-    if (backendFile) formData.append("backend", backendFile);
-    if (frontendFile) formData.append("frontend", frontendFile);
+    if (file) formData.append("file", file);
 
     try {
       await onSubmit(formData);
@@ -350,23 +345,13 @@ const ToolForm: React.FC<ToolFormProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <FileUpload
-              label="Backend (JAR file)"
-              required={mode === "create"}
-              acceptedFormats="application/java-archive"
-              onFileSelect={setBackendFile}
-              errorMessage={formErrors.backend}
-            />
-
-            <FileUpload
-              label="Frontend (ZIP folder)"
-              required={mode === "create"}
-              acceptedFormats="application/**"
-              onFileSelect={setFrontendFile}
-              errorMessage={formErrors.frontend}
-            />
-          </div>
+          <FileUpload
+            label="Zip file containing the tool"
+            required={mode === "create"}
+            acceptedFormats=""
+            onFileSelect={setFile}
+            errorMessage={formErrors.file}
+          />
         </section>
 
         {/* Submit Button */}
@@ -383,4 +368,4 @@ const ToolForm: React.FC<ToolFormProps> = ({
   );
 };
 
-export default ToolForm;
+export default NewToolForm;
