@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/tools").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,"/api/v1/subscriptions/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/subscriptions/types").hasAnyRole("ADMIN")
