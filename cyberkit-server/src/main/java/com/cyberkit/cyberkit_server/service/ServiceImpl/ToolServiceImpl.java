@@ -308,11 +308,8 @@ public class ToolServiceImpl implements ToolService {
         if(userDTO!=null && userDTO.getRole().equals(RoleEnum.ADMIN)){
             toolEntities = toolRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord,keyWord);
         }
-        else if(userDTO!=null && userDTO.isPremium()==true){
+        else {
             toolEntities = toolRepository.findEnabledToolsByKeyword(keyWord);
-        }
-        else{
-            toolEntities= toolRepository.findNotPremiumEnabledToolsByKeyword(keyWord);
         }
         toolEntities = sortToolsByKeyword(toolEntities,keyWord);
         return toolEntities.stream().map(toolMapper::toToolResponse).toList();
