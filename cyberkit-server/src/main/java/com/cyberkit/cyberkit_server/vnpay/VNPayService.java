@@ -1,21 +1,21 @@
 package com.cyberkit.cyberkit_server.vnpay;
 
-import org.springframework.stereotype.Service;
-
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class VNPayService {
 
-    public String generatePaymentUrl(Long price, Long subscriptionId){
+    public String generatePaymentUrl(Long price, Long subscriptionId) {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-        long amount = price*100;
+        long amount = price * 100;
         String bankCode = "NCB";
 
         String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
@@ -36,7 +36,7 @@ public class VNPayService {
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl+"?subscriptionId="+subscriptionId.toString());
+        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl + "?subscriptionId=" + subscriptionId.toString());
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -57,7 +57,7 @@ public class VNPayService {
             String fieldName = (String) itr.next();
             String fieldValue = (String) vnp_Params.get(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                //Build hash data
+                // Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
                 try {
@@ -65,7 +65,7 @@ public class VNPayService {
                 } catch (UnsupportedEncodingException e) {
                     throw new RuntimeException(e);
                 }
-                //Build query
+                // Build query
                 try {
                     query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
                 } catch (UnsupportedEncodingException e) {
@@ -90,5 +90,4 @@ public class VNPayService {
 
         return paymentUrl;
     }
-
 }

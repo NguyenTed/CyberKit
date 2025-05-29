@@ -13,5 +13,4 @@ public class GithubSocialDTO {
     private String name;
     private String email;
     private String avatarUrl;
-
 }

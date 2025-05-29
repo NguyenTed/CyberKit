@@ -144,9 +144,9 @@ export default function ToolHost() {
             title={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <FaHeart
-              className={
+              className={`cursor-pointer ${
                 isFavorite ? "text-red-500" : "text-gray-300 hover:text-red-500"
-              }
+              }`}
             />
           </button>
         </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { notification } from "antd";
-import { MenuOutlined, CrownTwoTone, SearchOutlined } from "@ant-design/icons";
+import { MenuOutlined, SearchOutlined } from "@ant-design/icons";
 import defaultAvatar from "../assets/images/defaultAvatar.jpg";
 import { ClipLoader } from "react-spinners";
 import { useCurrentApp } from "../components/context/AuthContext";
@@ -9,6 +9,7 @@ import UserMenu from "../components/UserMenu";
 import SearchModal from "../components/SearchModal";
 import { getDelayAccountAPI, logoutAPI } from "../services/AuthApiService";
 import { useToolStore } from "../store/useToolStore";
+import { FaCrown } from "react-icons/fa";
 
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
@@ -97,8 +98,11 @@ const NavBar: React.FC = () => {
             <img
               src="../../logo-no-background.png"
               className="w-[137px] h-[24px] cursor-pointer"
-              onClick={() => navigate("/")}
+              onClick={() => {
+                window.location.href = "/";
+              }}
             />
+
             <a
               href="#"
               className="text-gray-700 hover:text-blue-600 font-medium"
@@ -115,7 +119,7 @@ const NavBar: React.FC = () => {
             )}
             <div className="ml-auto">
               <button
-                className="px-2 py-1 border rounded-lg flex items-center text-gray-500 hover:bg-gray-100 text-lg w-[400px]"
+                className="px-2 py-1 border rounded-lg flex items-center text-gray-500 hover:bg-gray-100 text-lg w-[600px] cursor-pointer"
                 onClick={() => setModalOpen(true)}
               >
                 <SearchOutlined className="mr-2 text-xl" />
@@ -139,7 +143,7 @@ const NavBar: React.FC = () => {
                 <div className="flex items-center space-x-2 hover:text-blue-600 cursor-pointer">
                   {userInfo.premium && (
                     <span className="ml-1 text-yellow-500" title="PREMIUM">
-                      <CrownTwoTone />
+                      <FaCrown />
                     </span>
                   )}
                   <img

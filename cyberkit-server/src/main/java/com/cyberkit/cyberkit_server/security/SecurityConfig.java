@@ -13,42 +13,70 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-                                                   CustomAccessDeniedHandler customAccessDeniedHandler,
-                                                   OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-                                                   CustomOAuth2UserService customOAuth2UserService) throws Exception {
-        http
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.disable()) // ❌ Turn off completely
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/plugins/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 👈 This is crucial!
-                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/api/v1/subscriptions/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/subscriptions/types").hasAnyRole("ADMIN")
-                        .requestMatchers("/api/tools/**","/api/v1/tools/search/**").permitAll()
-                        .requestMatchers("api/v1/auth/github-login","api/v1/auth/github-code/**").permitAll()
-                        .requestMatchers("/api/v1/auth/login","api/v1/auth/signup","api/v1/auth/refresh", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/account").hasAnyRole("ADMIN")
-                        .requestMatchers("/api/v1/users","/api/v1/users/**").hasAnyRole("USER")
-                        .requestMatchers("/api/v1/categories").permitAll()
-                        .requestMatchers("/api/v1/categories/**").permitAll()
-                        .requestMatchers("/api/v1/favourites/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            CustomAccessDeniedHandler customAccessDeniedHandler,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            CustomOAuth2UserService customOAuth2UserService)
+            throws Exception {
+        http.headers(
+                        headers -> headers.frameOptions(frame -> frame.disable()) // ❌ Turn off completely
+                        )
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/plugins/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll() // 👈 This is crucial!
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/tools")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/download/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/subscriptions/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/subscriptions/types")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers("/api/tools/**", "/api/v1/tools/search/**")
+                        .permitAll()
+                        .requestMatchers("api/v1/auth/github-login", "api/v1/auth/github-code/**")
+                        .permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/login",
+                                "api/v1/auth/signup",
+                                "api/v1/auth/refresh",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html")
+                        .permitAll()
+                        .requestMatchers("/api/v1/account")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers("/api/v1/users", "/api/v1/users/**")
+                        .hasAnyRole("USER")
+                        .requestMatchers("/api/v1/categories")
+                        .permitAll()
+                        .requestMatchers("/api/v1/categories/**")
+                        .permitAll()
+                        .requestMatchers("/api/v1/favourites/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/execute/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools/execute/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .cors(Customizer.withDefaults())
-                .oauth2ResourceServer((oauth2)->oauth2.jwt(Customizer.withDefaults())
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler)
-                )
-//                .exceptionHandling(
-//                        exceptions -> exceptions
-//                                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) //401
-//                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
-                .formLogin(f->f.disable())
+                        .accessDeniedHandler(customAccessDeniedHandler))
+                //                .exceptionHandling(
+                //                        exceptions -> exceptions
+                //                                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                // //401
+                //                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
+                .formLogin(f -> f.disable())
                 .oauth2Login(oauth2 -> {
                     oauth2.disable();
                 })

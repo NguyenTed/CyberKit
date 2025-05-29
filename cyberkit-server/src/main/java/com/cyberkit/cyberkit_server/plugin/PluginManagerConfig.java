@@ -16,4 +16,3 @@ public class PluginManagerConfig {
         return new PluginManager(config.getPluginDirectory());
     }
 }
-

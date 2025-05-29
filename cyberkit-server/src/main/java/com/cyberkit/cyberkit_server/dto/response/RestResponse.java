@@ -1,7 +1,8 @@
 package com.cyberkit.cyberkit_server.dto.response;
 
-import lombok.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -12,9 +13,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class RestResponse<K> {
     @Builder.Default
     private int statusCode = 200;
+
     private String error;
     // message is string or list.
     private Object message;
     private K data;
 }
-

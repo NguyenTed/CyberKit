@@ -1,8 +1,10 @@
 package com.cyberkit.cyberkit_server.config;
 
 import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -30,16 +32,11 @@ public class OpenAPIConfig {
     }
 
     private Contact createContact() {
-        return new Contact()
-                .email("cyberkit@gmail.com")
-                .name("Cyberkit")
-                .url("https://cyberkit.vn");
+        return new Contact().email("cyberkit@gmail.com").name("Cyberkit").url("https://cyberkit.vn");
     }
 
     private License createLicense() {
-        return new License()
-                .name("MIT License")
-                .url("https://choosealicense.com/licenses/mit/");
+        return new License().name("MIT License").url("https://choosealicense.com/licenses/mit/");
     }
 
     private Info createApiInfo() {

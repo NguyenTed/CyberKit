@@ -19,6 +19,7 @@ import AdminRoute from "./features/admin/components/AdminRoute.tsx";
 import PricingPage from "./pages/Pricing.tsx";
 import PricingAdminPage from "./features/admin/pages/PricingAdmin.tsx";
 import MainLayout from "./layouts/MainLayout.tsx";
+import AdminLayout from "./layouts/AdminLayout.tsx";
 
 const router = createBrowserRouter([
   {
@@ -68,7 +69,7 @@ const router = createBrowserRouter([
   },
   {
     path: "admin",
-    element: <MainLayout />, // 👈 apply AdminLayout here
+    element: <AdminLayout />, // 👈 apply AdminLayout here
     children: [
       { index: true, element: <AdminPanel /> },
       { path: "tools/new", element: <NewToolPage /> },

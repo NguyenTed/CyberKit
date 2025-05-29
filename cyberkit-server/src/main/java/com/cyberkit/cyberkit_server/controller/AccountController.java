@@ -1,10 +1,11 @@
 package com.cyberkit.cyberkit_server.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.cyberkit.cyberkit_server.dto.request.RegisterDTO;
 import com.cyberkit.cyberkit_server.dto.response.RestResponse;
 import com.cyberkit.cyberkit_server.service.AccountService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/account")
@@ -17,9 +18,8 @@ public class AccountController {
     }
 
     @PostMapping()
-    public ResponseEntity<RestResponse> createUser(@RequestBody RegisterDTO registerDTO){
+    public ResponseEntity<RestResponse> createUser(@RequestBody RegisterDTO registerDTO) {
         accountService.createAccount(registerDTO);
-        return ResponseEntity.status(200).body(new RestResponse<>( 201,"","Create user successfully!",registerDTO));
+        return ResponseEntity.status(200).body(new RestResponse<>(201, "", "Create user successfully!", registerDTO));
     }
-
 }

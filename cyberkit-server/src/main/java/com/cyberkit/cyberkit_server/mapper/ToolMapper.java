@@ -1,10 +1,11 @@
 package com.cyberkit.cyberkit_server.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.cyberkit.cyberkit_server.data.ToolEntity;
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ToolMapper {
@@ -18,5 +19,6 @@ public interface ToolMapper {
     @Mapping(source = "category.id", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
     ToolResponse toToolResponse(ToolEntity tool);
+
     ToolEntity toToolEntity(ToolUploadRequest request);
 }
