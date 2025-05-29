@@ -1,6 +1,8 @@
 package com.cyberkit.cyberkit_server.security;
 
-import com.cyberkit.cyberkit_server.service.ServiceImpl.GithubEmailFetcher;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -9,8 +11,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.cyberkit.cyberkit_server.service.ServiceImpl.GithubEmailFetcher;
 
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -31,8 +32,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2User oauth2User = delegate.loadUser(userRequest);
 
         String primaryEmailAddress = extractPrimaryEmailAddress(
-                oauth2User,
-                userRequest.getAccessToken().getTokenValue());
+                oauth2User, userRequest.getAccessToken().getTokenValue());
 
         // return oauth2User if primaryEmailAddress is null
         // alternative: Throw exception
@@ -55,9 +55,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 NAME_ATTRIBUTE);
     }
 
-    private String extractPrimaryEmailAddress(
-            OAuth2User oauth2User,
-            String token) {
+    private String extractPrimaryEmailAddress(OAuth2User oauth2User, String token) {
         String primaryEmailAddress = oauth2User.getAttribute(EMAIL_KEY);
 
         if (!(primaryEmailAddress == null || primaryEmailAddress.isBlank())) {
@@ -67,4 +65,3 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return githubEmailFetcher.fetchPrimaryEmailAddress(token);
     }
 }
-

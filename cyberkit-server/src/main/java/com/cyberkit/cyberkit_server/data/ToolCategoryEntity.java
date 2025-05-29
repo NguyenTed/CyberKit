@@ -1,9 +1,10 @@
 package com.cyberkit.cyberkit_server.data;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
+
+import jakarta.persistence.*;
+
+import lombok.*;
 
 @Entity
 @Table(name = "tool_categories")

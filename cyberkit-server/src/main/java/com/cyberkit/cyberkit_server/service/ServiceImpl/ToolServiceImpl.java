@@ -1,4 +1,27 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import jakarta.transaction.Transactional;
+
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.cyberkit.cyberkit_server.data.ToolEntity;
 import com.cyberkit.cyberkit_server.dto.UserDTO;
 import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
@@ -15,31 +38,9 @@ import com.cyberkit.cyberkit_server.service.ToolService;
 import com.cyberkit.cyberkit_server.util.SecurityUtil;
 import com.cyberkit.cyberkit_server.util.StringUtil;
 import com.cyberkit.pluginservice.PluginService;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
-
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -53,29 +54,24 @@ public class ToolServiceImpl implements ToolService {
 
     @Override
     public ToolResponse getToolById(String id) {
-        var tool = toolRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new RuntimeException("Tool not found"));
+        var tool =
+                toolRepository.findById(UUID.fromString(id)).orElseThrow(() -> new RuntimeException("Tool not found"));
         return toolMapper.toToolResponse(tool);
     }
 
     @Override
     public List<ToolResponse> getToolsFiltered(Jwt jwt, Boolean premium, Boolean enabled, UUID categoryId) {
-        boolean isAdmin = jwt != null &&
-                jwt.getClaimAsStringList("authorities").contains("ROLE_ADMIN");
+        boolean isAdmin = jwt != null && jwt.getClaimAsStringList("authorities").contains("ROLE_ADMIN");
 
-        List<ToolEntity> tools = isAdmin
-                ? toolRepository.findAll()
-                : toolRepository.findAllByEnabled(true);
+        List<ToolEntity> tools = isAdmin ? toolRepository.findAll() : toolRepository.findAllByEnabled(true);
 
-        return tools.stream()
-                .map(toolMapper::toToolResponse)
-                .toList();
+        return tools.stream().map(toolMapper::toToolResponse).toList();
     }
 
     @Override
     public void togglePremiumTool(String id) {
-        var tool = toolRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new RuntimeException("Tool not found"));
+        var tool =
+                toolRepository.findById(UUID.fromString(id)).orElseThrow(() -> new RuntimeException("Tool not found"));
         var currentPremium = tool.isPremium();
         tool.setPremium(!currentPremium);
         toolRepository.save(tool);
@@ -83,8 +79,8 @@ public class ToolServiceImpl implements ToolService {
 
     @Override
     public void toggleEnabledTool(String id) {
-        var tool = toolRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new RuntimeException("Tool not found"));
+        var tool =
+                toolRepository.findById(UUID.fromString(id)).orElseThrow(() -> new RuntimeException("Tool not found"));
         var currentEnabled = tool.isEnabled();
         tool.setEnabled(!currentEnabled);
         toolRepository.save(tool);
@@ -99,7 +95,8 @@ public class ToolServiceImpl implements ToolService {
                 .icon(request.getIcon())
                 .premium(false)
                 .enabled(false)
-                .category(toolCategoryRepository.findById(request.getCategoryId())
+                .category(toolCategoryRepository
+                        .findById(request.getCategoryId())
                         .orElseThrow(() -> new RuntimeException("Tool category not found")))
                 .backendPath("")
                 .frontendPath("")
@@ -180,7 +177,7 @@ public class ToolServiceImpl implements ToolService {
         }
     }
 
-    private void extractFrontendZip (MultipartFile frontendZip, Path frontendDir) throws IOException {
+    private void extractFrontendZip(MultipartFile frontendZip, Path frontendDir) throws IOException {
         Files.createDirectories(frontendDir);
         try (ZipInputStream zis = new ZipInputStream(frontendZip.getInputStream())) {
             ZipEntry entry;
@@ -201,8 +198,12 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public Map<String, Object> executeTool (String toolId, String action, Map<String, Object> input) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
-        ToolEntity toolEntity = toolRepository.findById(UUID.fromString(toolId)).orElseThrow(() -> new RuntimeException("Tool not found"));
+    public Map<String, Object> executeTool(String toolId, String action, Map<String, Object> input)
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException,
+                    IllegalAccessException, IOException {
+        ToolEntity toolEntity = toolRepository
+                .findById(UUID.fromString(toolId))
+                .orElseThrow(() -> new RuntimeException("Tool not found"));
         // 1. Get the plugin wrapper
         PluginWrapper wrapper = pluginManager.getPlugin(toolId);
         if (wrapper == null) {
@@ -232,15 +233,19 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
-    public void updateTool(String toolId, ToolUploadRequest request, MultipartFile newJar, MultipartFile newFrontendZip) throws Exception {
-        ToolEntity tool = toolRepository.findById(UUID.fromString(toolId))
+    public void updateTool(String toolId, ToolUploadRequest request, MultipartFile newJar, MultipartFile newFrontendZip)
+            throws Exception {
+        ToolEntity tool = toolRepository
+                .findById(UUID.fromString(toolId))
                 .orElseThrow(() -> new RuntimeException("Tool not found"));
 
         tool.setName(request.getName());
         tool.setDescription(request.getDescription());
         tool.setVersion(request.getVersion());
         tool.setIcon(request.getIcon());
-        tool.setCategory(toolCategoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Tool category not found")));
+        tool.setCategory(toolCategoryRepository
+                .findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Tool category not found")));
         toolRepository.save(tool);
         log.info("✅ Plugin information updated: {}", tool.getName());
 
@@ -265,9 +270,11 @@ public class ToolServiceImpl implements ToolService {
             Files.createDirectories(backendDir);
             Files.copy(newJar.getInputStream(), jarPath, StandardCopyOption.REPLACE_EXISTING);
 
-            log.info("✅ Currently loaded plugins: {}", pluginManager.getAllPlugins().stream()
-                    .map(PluginWrapper::getId)
-                    .toList());
+            log.info(
+                    "✅ Currently loaded plugins: {}",
+                    pluginManager.getAllPlugins().stream()
+                            .map(PluginWrapper::getId)
+                            .toList());
 
             // 5. Reload backend plugin
             PluginWrapper wrapper = pluginManager.reloadPlugin(toolId, jarPath);
@@ -282,7 +289,8 @@ public class ToolServiceImpl implements ToolService {
     @Transactional
     public void deleteTool(String toolId) throws IOException {
         UUID id = UUID.fromString(toolId);
-        ToolEntity tool = toolRepository.findById(id)
+        ToolEntity tool = toolRepository
+                .findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolId));
 
         // 🔥 Clear favorite references
@@ -301,13 +309,12 @@ public class ToolServiceImpl implements ToolService {
         toolRepository.delete(tool);
     }
 
-    private Class<?> findPluginServiceImpl(Path jarPath, PluginClassLoader classLoader) throws IOException, ClassNotFoundException {
+    private Class<?> findPluginServiceImpl(Path jarPath, PluginClassLoader classLoader)
+            throws IOException, ClassNotFoundException {
         try (JarFile jarFile = new JarFile(jarPath.toFile())) {
             for (JarEntry entry : Collections.list(jarFile.entries())) {
                 if (entry.getName().endsWith(".class")) {
-                    String className = entry.getName()
-                            .replace('/', '.')
-                            .replace(".class", "");
+                    String className = entry.getName().replace('/', '.').replace(".class", "");
 
                     Class<?> cls = classLoader.loadClass(className);
                     for (Class<?> iface : cls.getInterfaces()) {
@@ -319,7 +326,8 @@ public class ToolServiceImpl implements ToolService {
                 }
             }
         }
-        throw new ClassNotFoundException("No class implementing com.cyberkit.pluginservice.PluginService found in " + jarPath);
+        throw new ClassNotFoundException(
+                "No class implementing com.cyberkit.pluginservice.PluginService found in " + jarPath);
     }
 
     private void loadAndRegisterPluginService(String toolId, Path jarPath, ClassLoader classLoader) throws Exception {
@@ -342,7 +350,8 @@ public class ToolServiceImpl implements ToolService {
                     // The class is not abstract
                     if (PluginService.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
                         // Instantiates the plugin with a no-arg constructor.
-                        PluginService service = (PluginService) clazz.getDeclaredConstructor().newInstance();
+                        PluginService service =
+                                (PluginService) clazz.getDeclaredConstructor().newInstance();
                         log.info("✅ Loaded PluginService: {}", className);
                         return;
                     }
@@ -355,25 +364,27 @@ public class ToolServiceImpl implements ToolService {
 
     @Override
     public List<ToolResponse> searchTools(String keyWord) {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
-                SecurityUtil.getCurrentUserLogin().get():"";
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
         UserDTO userDTO = null;
         List<ToolEntity> toolEntities = new ArrayList<>();
-        if(!email.equals("anonymousUser")){
+        if (!email.equals("anonymousUser")) {
             userDTO = accountService.getUserInfoByEmail(email);
         }
-        if(userDTO!=null && userDTO.getRole().equals(RoleEnum.ADMIN)){
-            toolEntities = toolRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord,keyWord);
-        }
-        else {
+        if (userDTO != null && userDTO.getRole().equals(RoleEnum.ADMIN)) {
+            toolEntities =
+                    toolRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord, keyWord);
+        } else {
             toolEntities = toolRepository.findEnabledToolsByKeyword(keyWord);
         }
-        toolEntities = sortToolsByKeyword(toolEntities,keyWord);
+        toolEntities = sortToolsByKeyword(toolEntities, keyWord);
         return toolEntities.stream().map(toolMapper::toToolResponse).toList();
     }
 
     public List<ToolEntity> sortToolsByKeyword(List<ToolEntity> tools, String keyword) {
-        tools.sort(Comparator.comparingInt(t -> StringUtil.minDistance( keyword.toLowerCase(),t.getName().toLowerCase())));
+        tools.sort(Comparator.comparingInt(
+                t -> StringUtil.minDistance(keyword.toLowerCase(), t.getName().toLowerCase())));
         return tools;
     }
 }

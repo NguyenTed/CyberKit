@@ -1,5 +1,11 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
+import java.util.*;
+
+import jakarta.transaction.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import com.cyberkit.cyberkit_server.data.*;
 import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
 import com.cyberkit.cyberkit_server.enums.SubscriptionStatus;
@@ -12,15 +18,11 @@ import com.cyberkit.cyberkit_server.repository.ToolRepository;
 import com.cyberkit.cyberkit_server.repository.UserRepository;
 import com.cyberkit.cyberkit_server.service.UserService;
 import com.cyberkit.cyberkit_server.util.SecurityUtil;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.*;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -30,20 +32,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean checkValidSubscription(Date endDate, Long userId) {
-//        UserEntity userEntity = userRepository.findById(id).get();
-//        List<SubscriptionEntity> subscriptionEntityList=  subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(id, SubscriptionStatus.SUCCESS);
-//        if(subscriptionEntityList==null|| subscriptionEntityList.isEmpty()){
-//            userEntity.setPremium(false);
-//            userRepository.save(userEntity);
-//            return false;
-//        }
-//        SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
-//        Date endDate = newestSubscription.getEndDate();
+        //        UserEntity userEntity = userRepository.findById(id).get();
+        //        List<SubscriptionEntity> subscriptionEntityList=
+        // subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(id, SubscriptionStatus.SUCCESS);
+        //        if(subscriptionEntityList==null|| subscriptionEntityList.isEmpty()){
+        //            userEntity.setPremium(false);
+        //            userRepository.save(userEntity);
+        //            return false;
+        //        }
+        //        SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
+        //        Date endDate = newestSubscription.getEndDate();
         Date now = new Date();
-        if(endDate.before(now)){
-            //Update user canceling premium
+        if (endDate.before(now)) {
+            // Update user canceling premium
             UserEntity userEntity = userRepository.findById(userId).get();
-            if(userEntity ==null) throw new GeneralAllException("Invalid user id!!");
+            if (userEntity == null) throw new GeneralAllException("Invalid user id!!");
             userEntity.setPremium(false);
             userEntity.setEndDate(null);
             return false;
@@ -67,8 +70,8 @@ public class UserServiceImpl implements UserService {
 
     private void updateFavouriteTool(String toolId, boolean shouldAdd) {
         UUID toolUUID = UUID.fromString(toolId);
-        ToolEntity toolEntity = toolRepository.findById(toolUUID)
-                .orElseThrow(() -> new GeneralAllException("Invalid toolId!"));
+        ToolEntity toolEntity =
+                toolRepository.findById(toolUUID).orElseThrow(() -> new GeneralAllException("Invalid toolId!"));
 
         String email = SecurityUtil.getCurrentUserLogin()
                 .orElseThrow(() -> new GeneralAllException("User not authenticated!"));
@@ -76,8 +79,7 @@ public class UserServiceImpl implements UserService {
         AccountEntity accountEntity = accountRepository.findByEmail(email);
         UserEntity userEntity = (UserEntity) accountEntity.getUser();
 
-        if (userEntity == null)
-            throw new GeneralAllException("Invalid user!");
+        if (userEntity == null) throw new GeneralAllException("Invalid user!");
 
         if (!userRepository.existsByIdAndFavouriteToolsId(userEntity.getId(), toolUUID)) {
             if (shouldAdd) {
@@ -104,8 +106,7 @@ public class UserServiceImpl implements UserService {
         AccountEntity accountEntity = accountRepository.findByEmail(email);
         UserEntity userEntity = (UserEntity) accountEntity.getUser();
 
-        if (userEntity == null)
-            throw new GeneralAllException("Invalid user!");
+        if (userEntity == null) throw new GeneralAllException("Invalid user!");
 
         Set<ToolEntity> toolEntities = userEntity.getFavouriteTools();
         return toolEntities.stream().map(toolMapper::toToolResponse).toList();
@@ -113,19 +114,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean checkExistingSubscription() {
-        String email = SecurityUtil.getCurrentUserLogin().isPresent()==true?
-                SecurityUtil.getCurrentUserLogin().get():"";
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? SecurityUtil.getCurrentUserLogin().get()
+                : "";
         AccountEntity accountEntity = accountRepository.findByEmail(email);
         AbstractUserEntity abstractUserEntity = accountEntity.getUser();
-        if(abstractUserEntity instanceof UserEntity){
-            List<SubscriptionEntity> subscriptionEntityList=  subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(abstractUserEntity.getId(), SubscriptionStatus.SUCCESS);
-            if(subscriptionEntityList.isEmpty()) return false;
+        if (abstractUserEntity instanceof UserEntity) {
+            List<SubscriptionEntity> subscriptionEntityList =
+                    subscriptionRepository.findByUser_IdAndStatusOrderByEndDateDesc(
+                            abstractUserEntity.getId(), SubscriptionStatus.SUCCESS);
+            if (subscriptionEntityList.isEmpty()) return false;
             SubscriptionEntity newestSubscription = subscriptionEntityList.get(0);
             Date now = new Date();
             Date endDate = newestSubscription.getEndDate();
-            if(endDate.after(now)) return true;
-        }
-        else{
+            if (endDate.after(now)) return true;
+        } else {
             throw new UnauthorizedPermissionException("Not applying for Admin!!");
         }
         return false;

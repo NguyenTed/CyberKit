@@ -1,14 +1,16 @@
 package com.cyberkit.cyberkit_server.data;
 
-import com.cyberkit.cyberkit_server.enums.RoleEnum;
 import jakarta.persistence.*;
+
+import com.cyberkit.cyberkit_server.enums.RoleEnum;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="accounts")
+@Table(name = "accounts")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,12 +19,16 @@ public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String email;
     private String password;
+
     @Column(columnDefinition = "TEXT")
     private String refreshToken;
+
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private AbstractUserEntity user;

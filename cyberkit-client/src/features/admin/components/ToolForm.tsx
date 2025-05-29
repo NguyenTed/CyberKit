@@ -118,7 +118,7 @@ const ToolForm: React.FC<ToolFormProps> = ({
 
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("categoryId", category);
+    formData.append("category", category);
     formData.append("version", version);
     formData.append("icon", icon);
     formData.append("description", description);

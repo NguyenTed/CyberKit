@@ -1,26 +1,28 @@
 package com.cyberkit.cyberkit_server.controller;
 
-import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
-import com.cyberkit.cyberkit_server.dto.response.RestResponse;
-import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
-import com.cyberkit.cyberkit_server.service.ToolService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.List;
-import java.util.Map;
+import com.cyberkit.cyberkit_server.dto.request.ToolUploadRequest;
+import com.cyberkit.cyberkit_server.dto.response.RestResponse;
+import com.cyberkit.cyberkit_server.dto.response.ToolResponse;
+import com.cyberkit.cyberkit_server.service.ToolService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -34,13 +36,14 @@ public class ToolController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(value = "premium", required = false) Boolean premium,
             @RequestParam(value = "enabled", required = false) Boolean enabled,
-            @RequestParam(value = "category", required = false) UUID categoryId
-    ) {
-        log.info("ToolController.getTools with filters - premium: {}, enabled: {}, category: {}", premium, enabled, categoryId);
+            @RequestParam(value = "category", required = false) UUID categoryId) {
+        log.info(
+                "ToolController.getTools with filters - premium: {}, enabled: {}, category: {}",
+                premium,
+                enabled,
+                categoryId);
         List<ToolResponse> tools = toolService.getToolsFiltered(jwt, premium, enabled, categoryId);
-        return RestResponse.<List<ToolResponse>>builder()
-                .data(tools)
-                .build();
+        return RestResponse.<List<ToolResponse>>builder().data(tools).build();
     }
 
     @GetMapping("/{id}")
@@ -67,20 +70,27 @@ public class ToolController {
 
     @PostMapping
     public ResponseEntity<String> uploadTool(
-            @RequestParam("file") MultipartFile combinedZip,
-            @ModelAttribute ToolUploadRequest request
-    ) throws Exception {
+            @RequestParam("file") MultipartFile combinedZip, @ModelAttribute ToolUploadRequest request)
+            throws Exception {
         toolService.uploadTool(combinedZip, request);
         return ResponseEntity.ok("Uploaded successfully");
     }
 
     @GetMapping("/execute/{toolId}/{action}")
-    public Map<String, Object> executeToolGETMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public Map<String, Object> executeToolGETMethod(
+            @PathVariable("toolId") String toolId, @PathVariable("action") String action)
+            throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
+                    InstantiationException, IllegalAccessException {
         return toolService.executeTool(toolId, action, new HashMap<>());
     }
 
     @PostMapping("/execute/{toolId}/{action}")
-    public Map<String, Object> executeToolPOSTMethod(@PathVariable("toolId") String toolId, @PathVariable("action") String action, @RequestBody Map<String, Object> body) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+    public Map<String, Object> executeToolPOSTMethod(
+            @PathVariable("toolId") String toolId,
+            @PathVariable("action") String action,
+            @RequestBody Map<String, Object> body)
+            throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
+                    InstantiationException, IllegalAccessException, IOException {
         System.out.println("Received body: " + body);
         System.out.println("Received action: " + action);
         return toolService.executeTool(toolId, action, body);
@@ -95,8 +105,7 @@ public class ToolController {
             @RequestParam("category") String categoryId,
             @RequestParam("version") String version,
             @RequestParam(value = "backend", required = false) MultipartFile backend,
-            @RequestParam(value = "frontend", required = false) MultipartFile frontend
-    ) {
+            @RequestParam(value = "frontend", required = false) MultipartFile frontend) {
         log.info("ToolController.updateTool");
         ToolUploadRequest request = new ToolUploadRequest();
         request.setName(name);
@@ -163,7 +172,7 @@ public class ToolController {
     }
 
     @GetMapping("/search/{keyWord}")
-    public ResponseEntity<RestResponse> searchTools(@PathVariable("keyWord") String keyWord){
-        return ResponseEntity.ok(new RestResponse<>(200,"","",toolService.searchTools(keyWord)));
+    public ResponseEntity<RestResponse> searchTools(@PathVariable("keyWord") String keyWord) {
+        return ResponseEntity.ok(new RestResponse<>(200, "", "", toolService.searchTools(keyWord)));
     }
 }

@@ -1,24 +1,27 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
-import com.cyberkit.cyberkit_server.dto.GithubSocialDTO;
-import com.cyberkit.cyberkit_server.service.SocialAuthService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import com.cyberkit.cyberkit_server.dto.GithubSocialDTO;
+import com.cyberkit.cyberkit_server.service.SocialAuthService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SocialAuthServiceImpl implements SocialAuthService {
     @Value("${spring.security.oauth2.client.registration.github.client-id}")
     private String clientId;
+
     @Value("${spring.security.oauth2.client.registration.github.client-secret}")
     private String clientSecret;
+
     @Value("${spring.security.oauth2.client.registration.github.redirect-uri}")
     private String redirectUri;
 
@@ -31,7 +34,7 @@ public class SocialAuthServiceImpl implements SocialAuthService {
 
     @Override
     public GithubSocialDTO fetchGitHubUserProfile(String code) throws IOException {
-        String accessToken= getAccessToken(code);
+        String accessToken = getAccessToken(code);
         String url = "https://api.github.com/user";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
@@ -50,7 +53,7 @@ public class SocialAuthServiceImpl implements SocialAuthService {
         throw new IOException("Failed to fetch user profile from GitHub");
     }
 
-    private String getAccessToken(String code) throws IOException{
+    private String getAccessToken(String code) throws IOException {
         String url = "https://github.com/login/oauth/access_token";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

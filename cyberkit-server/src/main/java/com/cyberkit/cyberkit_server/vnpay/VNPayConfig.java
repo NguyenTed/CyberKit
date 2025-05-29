@@ -1,6 +1,5 @@
 package com.cyberkit.cyberkit_server.vnpay;
 
-
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -11,29 +10,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 
 @Component
 public class VNPayConfig {
 
     @Value("${spring.payment.vnpay.vnp_PayUrl}")
     private String vnp_PayUrlYml;
+
     @Value("${spring.payment.vnpay.vnp_ReturnUrl}")
     private String vnp_ReturnUrlYml;
+
     @Value("${spring.payment.vnpay.vnp_TmnCode}")
     private String vnp_TmnCodeYml;
+
     @Value("${spring.payment.vnpay.vnp_HashSecret}")
-    private String secretKeyYML ;
+    private String secretKeyYML;
+
     @Value("${spring.payment.vnpay.vnp_ApiUrl}")
     private String vnp_ApiUrlYml;
 
@@ -45,10 +45,11 @@ public class VNPayConfig {
     @PostConstruct
     public void init() {
         secretKey = secretKeyYML;
-        vnp_PayUrl= vnp_PayUrlYml;
+        vnp_PayUrl = vnp_PayUrlYml;
         vnp_ReturnUrl = vnp_ReturnUrlYml;
         vnp_TmnCode = vnp_TmnCodeYml;
     }
+
     public static String md5(String message) {
         String digest = null;
         try {
@@ -85,7 +86,7 @@ public class VNPayConfig {
         return digest;
     }
 
-    //Util for VNPAY
+    // Util for VNPAY
     public static String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());
         Collections.sort(fieldNames);
@@ -103,7 +104,7 @@ public class VNPayConfig {
                 sb.append("&");
             }
         }
-        return hmacSHA512(secretKey,sb.toString());
+        return hmacSHA512(secretKey, sb.toString());
     }
 
     public static String hmacSHA512(final String key, final String data) {

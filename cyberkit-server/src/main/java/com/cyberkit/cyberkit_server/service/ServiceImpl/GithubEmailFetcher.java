@@ -1,11 +1,12 @@
 package com.cyberkit.cyberkit_server.service.ServiceImpl;
 
+import java.util.List;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
 @Service
 public record GithubEmailFetcher(RestClient restClient) {
     private static final String EMAILS_URL = "https://api.github.com/user/emails";
@@ -19,8 +20,7 @@ public record GithubEmailFetcher(RestClient restClient) {
                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                 .header(HttpHeaders.ACCEPT, "application/vnd.github+json")
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
+                .body(new ParameterizedTypeReference<>() {});
 
         if (emailVmList == null || emailVmList.isEmpty()) {
             return null;
@@ -32,6 +32,6 @@ public record GithubEmailFetcher(RestClient restClient) {
                 .map(GitHubEmailVm::email)
                 .orElse(null);
     }
-    private record GitHubEmailVm(String email, Boolean primary, Boolean verified, String visibility) {
-    }
+
+    private record GitHubEmailVm(String email, Boolean primary, Boolean verified, String visibility) {}
 }

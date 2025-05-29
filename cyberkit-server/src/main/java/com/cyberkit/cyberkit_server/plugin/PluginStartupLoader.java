@@ -1,11 +1,5 @@
 package com.cyberkit.cyberkit_server.plugin;
 
-import com.cyberkit.cyberkit_server.data.ToolEntity;
-import com.cyberkit.cyberkit_server.repository.ToolRepository;
-import com.cyberkit.pluginservice.PluginService;
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +7,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.stereotype.Component;
+
+import com.cyberkit.cyberkit_server.data.ToolEntity;
+import com.cyberkit.cyberkit_server.repository.ToolRepository;
+import com.cyberkit.pluginservice.PluginService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -46,8 +50,10 @@ public class PluginStartupLoader {
                             Class<?> clazz = classLoader.loadClass(className);
 
                             // Check if it implements PluginService
-                            if (PluginService.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
-                                PluginService service = (PluginService) clazz.getDeclaredConstructor().newInstance();
+                            if (PluginService.class.isAssignableFrom(clazz)
+                                    && !Modifier.isAbstract(clazz.getModifiers())) {
+                                PluginService service = (PluginService)
+                                        clazz.getDeclaredConstructor().newInstance();
                                 log.info("✅ Loaded PluginService: {}", className);
                             }
                         }

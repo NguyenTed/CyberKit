@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useCurrentApp } from "../../components/context/AuthContext";
 
 type HeroProps = {
   title: string;
@@ -15,6 +16,8 @@ const Hero: React.FC<HeroProps> = ({
   buttonLink = "#",
   imageSrc = "https://source.unsplash.com/featured/?technology",
 }) => {
+  const { userInfo } = useCurrentApp();
+
   return (
     <section className="relative flex flex-col md:flex-row items-center justify-between px-6 mt-4 md:px-12 lg:px-20 py-20 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
       {/* Left Content */}
@@ -35,15 +38,21 @@ const Hero: React.FC<HeroProps> = ({
         >
           {subtitle}
         </motion.p>
-        <motion.a
-          href={buttonLink}
-          className="mt-6 inline-block px-6 py-3 bg-white text-blue-600 font-semibold rounded-full shadow-md hover:bg-gray-200 transition"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.7 }}
-        >
-          {buttonText}
-        </motion.a>
+        {userInfo ? (
+          <></>
+        ) : (
+          <>
+            <motion.a
+              href={buttonLink}
+              className="mt-6 inline-block px-6 py-3 bg-white text-blue-600 font-semibold rounded-full shadow-md hover:bg-gray-200 transition"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7 }}
+            >
+              {buttonText}
+            </motion.a>
+          </>
+        )}
       </div>
 
       {/* Right Image */}

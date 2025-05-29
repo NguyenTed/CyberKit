@@ -13,7 +13,6 @@ public class Oauth2LoginConfig {
     @Value("${spring.jwt.key}")
     private String jwtKey;
 
-
     @Value("${spring.security.oauth2.client.registration.github.client-id}")
     private String githubClientId;
 
@@ -21,15 +20,16 @@ public class Oauth2LoginConfig {
     private String githubClientSecret;
 
     @Bean
-    public ClientRegistrationRepository clientRegistrationRepository(){
+    public ClientRegistrationRepository clientRegistrationRepository() {
         return new InMemoryClientRegistrationRepository(github());
     }
 
-    private ClientRegistration github(){
-         return CommonOAuth2Provider.GITHUB.getBuilder("github")
-                 .clientId(githubClientId)
-                 .clientSecret(githubClientSecret)
-                 .scope("user:email")
-                 .build();
-        }
+    private ClientRegistration github() {
+        return CommonOAuth2Provider.GITHUB
+                .getBuilder("github")
+                .clientId(githubClientId)
+                .clientSecret(githubClientSecret)
+                .scope("user:email")
+                .build();
+    }
 }

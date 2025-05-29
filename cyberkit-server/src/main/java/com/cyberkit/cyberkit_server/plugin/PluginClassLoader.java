@@ -7,6 +7,6 @@ import java.nio.file.*;
 
 public class PluginClassLoader extends URLClassLoader {
     public PluginClassLoader(Path jarPath) throws MalformedURLException {
-        super(new URL[]{ jarPath.toUri().toURL() }, ClassLoader.getSystemClassLoader());
+        super(new URL[] {jarPath.toUri().toURL()}, ClassLoader.getSystemClassLoader());
     }
 }

@@ -1,9 +1,9 @@
 package com.cyberkit.cyberkit_server.plugin;
 
-import lombok.Getter;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import lombok.Getter;
 
 @Getter
 public class PluginConfig {
@@ -12,5 +12,4 @@ public class PluginConfig {
     public PluginConfig(String pluginDir) {
         this.pluginDirectory = Paths.get(pluginDir);
     }
-
 }

@@ -1,6 +1,8 @@
 package com.cyberkit.cyberkit_server.plugin;
-import lombok.Getter;
+
 import java.nio.file.Path;
+
+import lombok.Getter;
 
 @Getter
 public class PluginWrapper {
@@ -14,4 +16,3 @@ public class PluginWrapper {
         this.classLoader = classLoader;
     }
 }
-
